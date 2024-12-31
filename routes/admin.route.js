@@ -8,13 +8,13 @@ const {
   deleteAdmin,
 } = require("../controllers/admin.controller.js");
 
-const authorizeRole = require("../middlewares/authorize.middleware.js");
+// const authorizeRole = require("../middlewares/authorize.middleware.js");
 
 
-router.get("/", authorizeRole(["SuperAdmin"]), getAdmins);
-router.post("/", authorizeRole(["SuperAdmin"]), createAdmin);
-router.put("/:id", authorizeRole(["SuperAdmin"]), updateAdmin);
-router.delete("/:id", authorizeRole(["SuperAdmin"]), deleteAdmin);
+router.get("/", getAdmins);
+router.post("/", createAdmin);
+router.put("/:id", updateAdmin);
+router.delete("/:id", deleteAdmin);
 
 module.exports = router;
 

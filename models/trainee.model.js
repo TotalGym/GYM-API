@@ -9,6 +9,7 @@ const traineeSchema = new mongoose.Schema({
     email: { type: String, required: [true, "You must add an email"] },
     phoneNumber: { type: String, required: [true, "Phone Number must be added"], minlength:[6, "Enter a valid Phone Number"] },
   },
+  role: {type: String, required: true},
   password: {
     type: String,
     required: true,

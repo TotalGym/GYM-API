@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/", createTrainee);
 router.get("/", getTrainees);
 router.get("/:id", getTraineeById);
-router.put("/:id", updateTrainee); //edit this one, so that the admin can't change all the data
+router.put("/:id", updateTrainee); //note that the admin can't change all the data ?? 
 router.put("/:id/changePassword", authorizeRole(["Trainee"]) , changePassword);
 router.delete("/:id", deleteTrainee);
 
