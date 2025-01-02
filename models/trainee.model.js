@@ -14,9 +14,9 @@ const traineeSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: [6, "Password must be at least 6 characters"],
-    // default: function () {
-    //   return this.contact.phoneNumber;
-    // },
+    default: function () {
+      return this.contact.phoneNumber;
+    },
   },
   gender: { type: String, enum: ["Male", "Female"], required: true },
   membership: {
