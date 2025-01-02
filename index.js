@@ -20,14 +20,17 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 
+app.use('/api/auth', routes.authRoutes);
+
+app.use(authenticate);
+
 app.use('/api/equipment', routes.equipmentRoutes);
 app.use('/api/store', routes.storeRoutes);
 app.use('/api/salesHistory', routes.salesHistoryRoutes);
 app.use('/api/programs', routes.programsRoutes);
 app.use('/api/trainee', routes.traineeRoutes);
-app.use('/api/staff', authenticate, routes.staffRoutes)
-app.use('/api/admin',authenticate ,authorizeRole(["SuperAdmin"]), routes.adminRoutes);
-app.use('/api/auth', routes.authRoutes);
+app.use('/api/staff', routes.staffRoutes)
+app.use('/api/admin', authorizeRole(["SuperAdmin"]), routes.adminRoutes);
 
 
 app.use(errorHandler);
