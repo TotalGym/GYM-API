@@ -22,12 +22,9 @@ exports.login = async (req, res) => {
 
     for (const { model, query } of models) {
       user = await model.findOne(query);
-      console.log(user);
-      role = user.role;  //error check !
-      // console.log(role);
     
       if (user) {
-        userRole = role;
+        userRole = user.role;
         break;
       }
     }
@@ -44,6 +41,6 @@ exports.login = async (req, res) => {
 
     res.status(200).json({ token });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error: " +  error.message });
   }
 };

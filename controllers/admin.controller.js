@@ -68,7 +68,7 @@ exports.createAdmin = async (req, res) => {
       const admin = await Admin.findById(id);
       if (!admin) return res.status(404).json({ message: "Admin not found" });
   
-      if (admin.role === "SuperAdmin" && admin._id.toString() === req.user.id) {
+      if (admin.role === "SuperAdmin" && admin._id.toString() === req.user.id) {       //not needed ?
         return res.status(403).json({ message: "You cannot delete your own account" });
       }
   
