@@ -9,14 +9,14 @@ const traineeSchema = new mongoose.Schema({
     email: { type: String, required: [true, "You must add an email"] },
     phoneNumber: { type: String, required: [true, "Phone Number must be added"], minlength:[6, "Enter a valid Phone Number"] },
   },
-  role: {type: String, required: true},
+  role: {type: String, required: true, default: "Trainee"},
   password: {
     type: String,
     required: true,
     minlength: [6, "Password must be at least 6 characters"],
-    default: function () {
-      return this.contact.phoneNumber;
-    },
+    // default: function () {
+    //   return this.contact.phoneNumber;
+    // },
   },
   gender: { type: String, enum: ["Male", "Female"], required: true },
   membership: {
