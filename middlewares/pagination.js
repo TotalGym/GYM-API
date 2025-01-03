@@ -9,7 +9,7 @@ exports.paginatedResults = (model) => {
       const startIndex = (page - 1) * limit;
   
       const results = {};
-  
+      // Fix search !
       try {
         const query = search
           ? { $text: { $search: search } }
@@ -35,7 +35,7 @@ exports.paginatedResults = (model) => {
         res.paginatedResults = results;
         next();
       } catch (e) {
-        res.status(500).json({ message: "Error: " + e.message });
+        res.status(500).json({ message: "Error: +_+ " + e.message });
       }
     };
   };

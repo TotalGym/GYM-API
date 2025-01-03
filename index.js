@@ -30,6 +30,8 @@ app.use('/api/salesHistory', routes.salesHistoryRoutes);
 app.use('/api/programs', routes.programsRoutes);
 app.use('/api/trainee', routes.traineeRoutes);
 app.use('/api/staff', routes.staffRoutes)
+app.use("/api/payments", routes.paymentRoutes);
+app.use('/api/report', routes.reportRoutes);
 app.use('/api/admin', authorizeRole(["SuperAdmin"]), routes.adminRoutes);
 
 
