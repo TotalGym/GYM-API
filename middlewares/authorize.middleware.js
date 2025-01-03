@@ -1,4 +1,4 @@
- const authorizeRole = (allowedRoles) => {
+const authorizeRole = (allowedRoles) => {
     return (req, res, next) => {
       const userRole = req.user?.role;
   
@@ -11,5 +11,5 @@
     };
   };
   
-  module.exports = authorizeRole;
+module.exports = authorizeRole;
   

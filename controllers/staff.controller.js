@@ -20,10 +20,8 @@ exports.getStaffById = async (req, res) => {
 };
 
 exports.addStaff = async (req, res) => {
-  const { name, role, contact, payroll } = req.body;
-
   try {
-    const newStaff = new Staff({ name, role, contact, payroll });
+    const newStaff = new Staff(req.body);
     await newStaff.save();
     res.status(201).json({ message: "Staff added successfully", newStaff });
   } catch (error) {
