@@ -8,6 +8,7 @@ const authRoutes = require('../routes/auth.route.js');
 const staffRoutes = require('../routes/staff.route.js');
 const paymentRoutes = require('../routes/payments.route.js');
 const reportRoutes = require('../routes/reports.route.js');
+const notificationRoutes = require('../routes/notification.route.js');
 
 module.exports = {
   equipmentRoutes,
@@ -19,5 +20,6 @@ module.exports = {
   authRoutes,
   staffRoutes,
   paymentRoutes,
-  reportRoutes
+  reportRoutes,
+  notificationRoutes,
 };

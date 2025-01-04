@@ -12,7 +12,7 @@ exports.paginatedResults = (model) => {
       // Fix search !
       try {
         const query = search
-          ? { $text: { $search: search } }
+          ? { $text: { $regex: this.queryString.keyword, $options: "i" } }
           : {};
   
         results.results = await model
