@@ -1,8 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const authorizeRole = require("../middlewares/authorize.middleware");
-const { generateTraineeReport, generateEquipmentReport, generateStaffReport, generateProgramsReport, generatePaymentsReport, generateStoreReport } = require("../controllers/reports.controller");
-const { paginatedResults } = require("../middlewares/pagination");
+const { 
+  generateStoreReport,
+  generateStaffReport,
+  generateTraineeReport, 
+  generateEquipmentReport, 
+  generateProgramsReport, 
+  generatePaymentsReport, 
+} = require("../controllers/reports.controller");
+const { paginatedResults } = require("../utils/pagination");
 const Trainee = require("../models/trainee.model");
 const Equipment = require("../models/equipment.model");
 const staffModel = require("../models/staff.model");
