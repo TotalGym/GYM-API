@@ -1,14 +1,18 @@
 //TODO: Refactor reports to provide to new informations
+const Payment = require('../models/payments.model');
+const Program = require('../models/programs.model');
+const traineeModel = require('../models/trainee.model');
 
 exports.generateTraineeReport = async (req, res) => {
   try {
-    const paginatedData = res.paginatedResults.results;
+    const trainees = await traineeModel.find().populate({path: "selectedPrograms", select: "programName"})
+    const paginatedData = trainees;
     const reportData = paginatedData.map(trainee => ({
       Name: trainee.name,
       Email: trainee.contact.email,
       MembershipStartDate: trainee.membership.startDate,
       MembershipEndDate: trainee.membership.endDate,
-      SelectedPrograms: trainee.selectedPrograms.map(program => program.programName),
+      SelectedPrograms: trainee.selectedPrograms.map(program=> program.programName), 
     }));
 
     res.status(200).json({
@@ -69,10 +73,16 @@ exports.generateStaffReport = async (req, res) => {
 
 exports.generateProgramsReport = async (req, res) => {
     try {
-      const paginatedData = res.paginatedResults.results;
+
+      const programs = await Program.find().populate({path: "registeredTrainees", select:"name contact"})
+
+      const paginatedData = programs;
       const reportData = paginatedData.map(program => ({
         ProgramName: program.programName,
         Description: program.description,
+        Exercises : program.exercises,
+        Schedule : program.schedule,
+        Image : program.image,
         RegisteredTrainees: program.registeredTrainees.map(trainee => ({
           Name: trainee.name,
           Email: trainee.contact.email,
@@ -94,14 +104,16 @@ exports.generateProgramsReport = async (req, res) => {
 
 exports.generatePaymentsReport = async (req, res) => {
     try {
-        const paginatedData = res.paginatedResults.results;
+        const payments = await Payment.find().populate("TraineeID", "name contact.email")
+
+        const paginatedData = payments;
         const reportData = paginatedData.map(payment => ({
-        TraineeName: payment.TraineeID.name,
-        TraineeEmail: payment.TraineeID.contact.email,
-        Amount: payment.Amount,
-        Status: payment.Status,
-        DueDate: payment.DueDate,
-        PaymentDate: payment.PaymentDate,
+        TraineeName: payment.TraineeID?.name,
+        TraineeEmail: payment.TraineeID.contact?.email,
+        Amount: payment?.Amount,
+        Status: payment?.Status,
+        DueDate: payment?.DueDate,
+        PaymentDate: payment?.PaymentDate,
         }));
 
         res.status(200).json({
@@ -117,10 +129,10 @@ exports.generatePaymentsReport = async (req, res) => {
 };
 
 
-exports.generateStoreReport = async (req, res) => {
+exports.generateStoreReport = async (req, res) => {  // DO I need to get who bought what ? 
     try {
       const paginatedData = res.paginatedResults.results;
-      const reportData = paginatedData.map(product => ({
+      const reportData = paginatedData.map(product => ({ // get all the data at once
         ProductName: product.productName,
         InventoryCount: product.inventoryCount,
       }));
