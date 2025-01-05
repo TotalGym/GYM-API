@@ -6,7 +6,7 @@ const authenticate = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Unauthorized: Token missing" });
   
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY, { expiresIn: '1d' });
     req.user = decoded;
     next();
   } catch (error) {

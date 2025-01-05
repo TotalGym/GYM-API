@@ -3,13 +3,21 @@ const Trainee = require("../models/trainee.model.js");
 
 exports.createPayment = async (req, res) => {
   try {
-    const { TraineeID, Amount, Status, DueDate, PaymentDate } = req.body;
+    const { TraineeID, Amount, Status } = req.body;
 
     const trainee = await Trainee.findById(TraineeID);
     if (!trainee) return res.status(404).json({ message: "Trainee not found" });
-
-    const payment = new Payment({ TraineeID, Amount, Status, DueDate, PaymentDate });
+    
+    let PaymentDate = new Date();
+    
+    const payment = new Payment({ TraineeID, Amount, Status, DueDate:trainee.membership.endDate, PaymentDate });
     const savedPayment = await payment.save();
+
+    const currentEndDate = new Date(trainee.membership.endDate);
+    const updatedEndDate = new Date(currentEndDate.setDate(currentEndDate.getDate() + 30));
+    trainee.membership.endDate = updatedEndDate.toISOString();
+
+    await trainee.save();
 
     res.status(201).json(savedPayment);
   } catch (error) {
@@ -42,7 +50,7 @@ exports.updatePayment = async (req, res) => {
     const updatedPayment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedPayment) return res.status(404).json({ message: "Payment not found" });
 
-    res.status(200).json(updatedPayment);
+    res.status(202).json(updatedPayment);
   } catch (error) {
     res.status(500).json({ message: "Failed to update payment", error: error.message });
   }
