@@ -80,26 +80,6 @@ exports.updateTrainee = async (req, res) => {
   }
 };
 
-exports.changePassword = async (req, res) => {
-
-  const { id } = req.params;
-  const { oldPassword, newPassword } = req.body;
-
-  try {
-    const trainee = await Trainee.findById(id);
-    if (!trainee) return res.status(404).json({ message: "Trainee not found" });
-
-    const isMatch = await bcrypt.compare(oldPassword, trainee.password);
-    if (!isMatch) return res.status(400).json({ message: "Old password is incorrect" });
-
-    trainee.password = newPassword;
-    await trainee.save();
-    res.status(200).json({ message: "Password updated successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating password - " + error.message });
-  }
-};
-
 exports.deleteTrainee = async (req, res) => {
   try {
     const trainee = await Trainee.findByIdAndDelete(req.params.id);

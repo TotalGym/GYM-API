@@ -22,7 +22,6 @@ router.get("/", paginatedResults(traineeModel), getTrainees);
 router.get("/:id", getTraineeById);
 
 router.put("/:id", updateTrainee); //Admin can't change all the data ? 
-router.put("/changePassword/:id", authenticate, authorizeRole(["Trainee"]) , changePassword);
 router.put("/:traineeId/select-program/:programId", selectProgram);
 
 router.delete("/:id", deleteTrainee);
