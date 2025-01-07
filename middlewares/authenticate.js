@@ -6,11 +6,11 @@ const authenticate = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Unauthorized: Token missing" });
   
   try {
-    const decoded = jwt.verify(token, SECRET_KEY, { expiresIn: '1d' });
+    const decoded = jwt.verify(token, SECRET_KEY);
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ message: "Forbidden: Invalid token" });
+    res.status(403).json({ message: "Forbidden: Invalid token, " + error.message });
   }
 };
 module.exports = { authenticate };
