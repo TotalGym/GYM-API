@@ -8,7 +8,7 @@ const staffSchema = new mongoose.Schema({
     enum: ["Coach" , "EquipmentManager" , "SalesManager"],
   },
   contact: {
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, lowercase:true },
     phoneNumber: { type: String, required: true }
   },
   password: {
@@ -16,6 +16,10 @@ const staffSchema = new mongoose.Schema({
     minlength: [6, "Password must be at least 6 characters"],
     required: [true, "Paessword is requierd"],
   },
+  passwordChangedAt: Date,
+  passwordResetCode: String,
+  passwordResetExpires: Date,
+  passwordResetVerified: Boolean,
   attendance: [
     {
       date: { type: Date, default: Date.now },

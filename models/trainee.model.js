@@ -6,7 +6,7 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 const traineeSchema = new mongoose.Schema({
   name: { type: String, required: [true, "Please Add a name"], minlength:[2, "Please Enter a valid name"] },
   contact: {
-    email: { type: String, required: [true, "You must add an email"] },
+    email: { type: String, required: [true, "You must add an email"], lowercase:true },
     phoneNumber: { type: String, required: [true, "Phone Number must be added"], minlength:[6, "Enter a valid Phone Number"] },
   },
   role: {type: String, required: true, default: "Trainee"},
@@ -18,6 +18,10 @@ const traineeSchema = new mongoose.Schema({
       return this.contact.phoneNumber;
     },
   },
+  passwordChangedAt: Date,
+  passwordResetCode: String,
+  passwordResetExpires: Date,
+  passwordResetVerified: Boolean,
   gender: { type: String, enum: ["Male", "Female"], required: true },
   membership: {
     startDate: { type: Date, required: true },

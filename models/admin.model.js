@@ -16,6 +16,10 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please Enter your password"],
   },
+  passwordChangedAt: Date,
+  passwordResetCode: String,
+  passwordResetExpires: Date,
+  passwordResetVerified: Boolean,
   role: {
     type: String,
     enum: ["SuperAdmin", "Admin"],
