@@ -5,20 +5,16 @@ const {
     getTraineeById, 
     updateTrainee, 
     deleteTrainee, 
-    changePassword, 
     selectProgram 
 } = require("../controllers/trainee.controller.js");
-const {authenticate} = require("../middlewares/authenticate");
-const authorizeRole = require("../middlewares/authorize.middleware.js");
-const { paginatedResults } = require("../utils/pagination.js");
-const traineeModel = require("../models/trainee.model.js");
 
+const authorizeRole = require("../middlewares/authorize.middleware.js");
 
 const router = express.Router();
 
-router.post("/", createTrainee);
+router.post("/",authorizeRole(["Admin", "SuperAdmin", "Coach"]), createTrainee);
 
-router.get("/", paginatedResults(traineeModel), getTrainees);
+router.get("/",  getTrainees);
 router.get("/:id", getTraineeById);
 
 router.put("/:id", updateTrainee); //Admin can't change all the data ? 

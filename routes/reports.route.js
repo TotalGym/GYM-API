@@ -9,58 +9,40 @@ const {
   generateProgramsReport, 
   generatePaymentsReport, 
 } = require("../controllers/reports.controller");
-const { paginatedResults } = require("../utils/pagination");
-const Trainee = require("../models/trainee.model");
-const Equipment = require("../models/equipment.model");
-const staffModel = require("../models/staff.model");
-const Program = require("../models/programs.model");
-const Payment = require("../models/payments.model");
-const Store = require("../models/store.model");
 
 router.get(
   "/trainee-report",
-  authorizeRole(["Admin", "SuperAdmin"]),
-  paginatedResults(Trainee),
+  authorizeRole(["Admin", "SuperAdmin", "Coach"]),
   generateTraineeReport
 );
 
-
 router.get(
   "/equipment-report",
-  authorizeRole(["Admin", "SuperAdmin"]),
-  paginatedResults(Equipment),
+  authorizeRole(["Admin", "SuperAdmin", "EquipmentManager"]),
   generateEquipmentReport
 );
-
 
 router.get(
     "/staff-report",
     authorizeRole(["Admin", "SuperAdmin"]),
-    paginatedResults(staffModel),
     generateStaffReport
 );
 
-
 router.get(
     "/programs-report",
-    authorizeRole(["Admin", "SuperAdmin"]),
-    paginatedResults(Program),
+    authorizeRole(["Admin", "SuperAdmin", "Coach"]),
     generateProgramsReport
 );
-
 
 router.get(
     "/payments-reports",
     authorizeRole(["Admin", "SuperAdmin"]),
-    paginatedResults(Payment),
     generatePaymentsReport
 );
 
-
 router.get(
     "/store-report",
-    authorizeRole(["Admin", "SuperAdmin"]),
-    paginatedResults(Store),
+    authorizeRole(["Admin", "SuperAdmin", "SalesManager"]),
     generateStoreReport
 );
 
