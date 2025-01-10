@@ -1,4 +1,6 @@
 const Notification = require("../models/notification.model.js");
+const { paginatedResults } = require("../utils/pagination.js");
+const { search } = require("../utils/search.js");
 
 exports.createNotification = async (req, res) => {
   try {
@@ -13,13 +15,16 @@ exports.createNotification = async (req, res) => {
 
 exports.getAllNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find();
-    res.status(200).json(notifications);
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Notification, searchTerm);
+
+    const paginatedResponse = await paginatedResults(Notification, searchQuery, req);
+
+    res.status(200).json(paginatedResponse);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 // exports.getNotificationById = async (req, res) => {
 //     const {id} = req.params;
 //     try {

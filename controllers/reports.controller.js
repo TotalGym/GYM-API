@@ -1,25 +1,35 @@
 //TODO: Refactor reports to provide to new informations
 const Payment = require('../models/payments.model');
 const Program = require('../models/programs.model');
-const traineeModel = require('../models/trainee.model');
+const Trainee = require('../models/trainee.model');
+const Equipment = require('../models/equipment.model.js');
+const Staff = require('../models/staff.model.js');
+const Store = require('../models/store.model.js');
+const { paginatedResults } = require('../utils/pagination');
+const { search } = require('../utils/search');
 
 exports.generateTraineeReport = async (req, res) => {
   try {
-    const trainees = await traineeModel.find().populate({path: "selectedPrograms", select: "programName"})
-    const paginatedData = trainees;
-    const reportData = paginatedData.map(trainee => ({
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Trainee, searchTerm);
+
+    const paginatedData = await paginatedResults(Trainee, searchQuery, req, { 
+      populateFields: [{ path: "selectedPrograms", select: "programName" }]
+    });
+
+    const reportData = paginatedData.results.map(trainee => ({
       Name: trainee.name,
       Email: trainee.contact.email,
       MembershipStartDate: trainee.membership.startDate,
       MembershipEndDate: trainee.membership.endDate,
-      SelectedPrograms: trainee.selectedPrograms.map(program=> program.programName), 
+      SelectedPrograms: trainee.selectedPrograms.map(program => program.programName), 
     }));
 
     res.status(200).json({
       reportName: "Trainee Report",
-      totalCount: res.paginatedResults.totalCount,
-      next: res.paginatedResults.next,
-      previous: res.paginatedResults.previous,
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
       reportData,
     });
   } catch (error) {
@@ -27,11 +37,14 @@ exports.generateTraineeReport = async (req, res) => {
   }
 };
 
-
 exports.generateEquipmentReport = async (req, res) => {
   try {
-    const paginatedData = res.paginatedResults.results;
-    const reportData = paginatedData.map(eq => ({
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Equipment, searchTerm);
+
+    const paginatedData = await paginatedResults(Equipment, searchQuery, req);
+    
+    const reportData = paginatedData.results.map(eq => ({
       Name: eq.name,
       Quantity: eq.quantity,
       Status: eq.status,
@@ -39,9 +52,9 @@ exports.generateEquipmentReport = async (req, res) => {
 
     res.status(200).json({
       reportName: "Equipment Report",
-      totalCount: res.paginatedResults.totalCount,
-      next: res.paginatedResults.next,
-      previous: res.paginatedResults.previous,
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
       reportData,
     });
   } catch (error) {
@@ -50,101 +63,114 @@ exports.generateEquipmentReport = async (req, res) => {
 };
 
 exports.generateStaffReport = async (req, res) => {
-    try {
-      const paginatedData = res.paginatedResults.results;
-      const reportData = paginatedData.map(staff => ({
-        Name: staff.name,
-        Role: staff.role,
-        Email: staff.contact.email,
-      }));
-  
-      res.status(200).json({
-        reportName: "Staff Report",
-        totalCount: res.paginatedResults.totalCount,
-        next: res.paginatedResults.next,
-        previous: res.paginatedResults.previous,
-        reportData,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to generate staff report", error: error.message });
-    }
-};
+  try {
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Staff, searchTerm);  // Use search function
 
+    const paginatedData = await paginatedResults(Staff, searchQuery, req);
+    
+    const reportData = paginatedData.results.map(staff => ({
+      Name: staff.name,
+      Role: staff.role,
+      Email: staff.contact.email,
+      Payment: staff.payroll
+    }));
+
+    res.status(200).json({
+      reportName: "Staff Report",
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
+      reportData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to generate staff report", error: error.message });
+  }
+};
 
 exports.generateProgramsReport = async (req, res) => {
-    try {
+  try {
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Program, searchTerm);
 
-      const programs = await Program.find().populate({path: "registeredTrainees", select:"name contact"})
+    const paginatedData = await paginatedResults(Program, searchQuery, req, { 
+      populateFields: [{ path: "registeredTrainees", select: "name contact" }]
+    });
 
-      const paginatedData = programs;
-      const reportData = paginatedData.map(program => ({
-        ProgramName: program.programName,
-        Description: program.description,
-        Exercises : program.exercises,
-        Schedule : program.schedule,
-        Image : program.image,
-        RegisteredTrainees: program.registeredTrainees.map(trainee => ({
-          Name: trainee.name,
-          Email: trainee.contact.email,
-        })),
-      }));
-  
-      res.status(200).json({
-        reportName: "Programs Report",
-        totalCount: res.paginatedResults.totalCount,
-        next: res.paginatedResults.next,
-        previous: res.paginatedResults.previous,
-        reportData,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to generate programs report", error: error.message });
-    }
+    const reportData = paginatedData.results.map(program => ({
+      ProgramName: program.programName,
+      Description: program.description,
+      Exercises: program.exercises,
+      Schedule: program.schedule,
+      Image: program.image,
+      RegisteredTrainees: program.registeredTrainees.map(trainee => ({
+        Name: trainee.name,
+        Email: trainee.contact.email,
+      })),
+    }));
+
+    res.status(200).json({
+      reportName: "Programs Report",
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
+      reportData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to generate programs report", error: error.message });
+  }
 };
-
 
 exports.generatePaymentsReport = async (req, res) => {
-    try {
-        const payments = await Payment.find().populate("TraineeID", "name contact.email")
+  try {
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Payment, searchTerm);
 
-        const paginatedData = payments;
-        const reportData = paginatedData.map(payment => ({
-        TraineeName: payment.TraineeID?.name,
-        TraineeEmail: payment.TraineeID.contact?.email,
-        Amount: payment?.Amount,
-        Status: payment?.Status,
-        DueDate: payment?.DueDate,
-        PaymentDate: payment?.PaymentDate,
-        }));
+    const paginatedData = await paginatedResults(Payment, searchQuery, req, {
+      populateFields: [{ path: "TraineeID", select: "name contact.email" }]
+    });
 
-        res.status(200).json({
-        reportName: "Payments Report",
-        totalCount: res.paginatedResults.totalCount,
-        next: res.paginatedResults.next,
-        previous: res.paginatedResults.previous,
-        reportData,
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to generate payments report", error: error.message });
-    }
+    const reportData = paginatedData.results.map(payment => ({
+      TraineeName: payment.TraineeID?.name,
+      TraineeEmail: payment.TraineeID.contact?.email,
+      Amount: payment?.Amount,
+      Status: payment?.Status,
+      DueDate: payment?.DueDate,
+      PaymentDate: payment?.PaymentDate,
+    }));
+
+    res.status(200).json({
+      reportName: "Payments Report",
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
+      reportData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to generate payments report", error: error.message });
+  }
 };
 
+exports.generateStoreReport = async (req, res) => {
+  try {
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Store, searchTerm);
 
-exports.generateStoreReport = async (req, res) => {  // DO I need to get who bought what ? 
-    try {
-      const paginatedData = res.paginatedResults.results;
-      const reportData = paginatedData.map(product => ({ // get all the data at once
-        ProductName: product.productName,
-        InventoryCount: product.inventoryCount,
-      }));
-  
-      res.status(200).json({
-        reportName: "Store Inventory Report",
-        totalCount: res.paginatedResults.totalCount,
-        next: res.paginatedResults.next,
-        previous: res.paginatedResults.previous,
-        reportData,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to generate store report", error: error.message });
-    }
+    const paginatedData = await paginatedResults(Store, searchQuery, req);
+
+    const reportData = paginatedData.results.map(product => ({
+      ProductName: product.productName,
+      InventoryCount: product.inventoryCount,
+    }));
+
+    res.status(200).json({
+      reportName: "Store Inventory Report",
+      totalCount: paginatedData.totalCount,
+      next: paginatedData.next,
+      previous: paginatedData.previous,
+      reportData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to generate store report", error: error.message });
+  }
 };

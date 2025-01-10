@@ -1,9 +1,11 @@
 
 const Program = require('../models/programs.model.js');
+const { paginatedResults } = require('../utils/pagination.js');
+const { search } = require('../utils/search.js');
 
 const createProgram = async (req, res) => {
-    const {programName, exercises, description, image, schedule } = req.body;
-    const program = new Program({programName, exercises, description, image, schedule });
+    const {programName, exercises, description, image, schedule, monthlyPrice } = req.body;
+    const program = new Program({programName, exercises, description, image, schedule, monthlyPrice });
     try {
         const savedProgram = await program.save();
         res.status(201).json(savedProgram);
@@ -14,16 +16,19 @@ const createProgram = async (req, res) => {
 
 const getPrograms = async (req, res) => {
     try {
-        const programs = await Program.find().populate('registeredTrainees');
-        // const programs = await Program.find();
-
-        res.status(200).json(programs);
-    } catch (error) {
-        res.status(500).json({message: error.message});
-    }
+        const searchTerm = req.query.search || '';
+        const searchQuery = search(Program, searchTerm);
+        const paginatedResponse = await paginatedResults(Program, searchQuery, req, {
+            populateFields: [
+              { path: 'registeredTrainees', select: 'name' },
+            ],
+          });
+        res.status(200).json(paginatedResponse);
+      } catch (error) {
+        res.status(500).json({ message: "Failed to retrieve programs", error: error.message });
+      }
 };
 
-//Get one program
 const getProgram = async (req, res) => {
     const {id} = req.params;
     try {
@@ -35,19 +40,17 @@ const getProgram = async (req, res) => {
     }
 };
 
-// Update Program
 const updateProgram = async (req, res) => {
     try {
         const { id } = req.params;
         const updatedProgram = await Program.findByIdAndUpdate(id, req.body, { new: true });
-        if(!updateProgram) return res.status(404).json({message: 'Program not found'})  //todo: validation for the routes data
+        if(!updateProgram) return res.status(404).json({message: 'Program not found'})
         res.status(202).json(updatedProgram);
     } catch (error) {
         res.status(500).json({message: error.message});
     }
 };
 
-// Delete Program
 const deleteProgram = async (req, res) => {
     const { id } = req.params;
     try {

@@ -1,17 +1,21 @@
 const Equipment = require('../models/equipment.model.js');
 const mongoose = require('mongoose');
-const { isEqual } = require('../utils/isEqual.js');
+const {search} = require('../utils/search.js');
+const {paginatedResults} = require('../utils/pagination.js');
+
 
 
 exports.getAllEquipments = async (req, res) => {
   try {
-    const equipment = await Equipment.find();
-    res.status(200).json(equipment);
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Equipment, searchTerm);
+    const paginatedResponse = await paginatedResults(Equipment, searchQuery, req);
+
+    res.status(200).json(paginatedResponse);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 exports.getEquipmentById = async (req, res) => {
   try {

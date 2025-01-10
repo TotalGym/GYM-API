@@ -1,5 +1,8 @@
 const Payment = require("../models/payments.model.js");
 const Trainee = require("../models/trainee.model.js");
+const { paginatedResults } = require("../utils/pagination.js");
+const { search } = require("../utils/search.js");
+
 
 exports.createPayment = async (req, res) => {
   try {
@@ -26,12 +29,16 @@ exports.createPayment = async (req, res) => {
 };
 
 exports.getAllPayments = async (req, res) => {
-  try {
-    const payments = await Payment.find().populate("TraineeID", "name contact");
-    res.status(200).json(payments);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve payments", error: error.message });
-  }
+  try{
+    const searchTerm = req.query.search || '';
+    const searchQuery = search(Payment, searchTerm);
+    const paginatedResponse = await paginatedResults(Payment, searchQuery, req, {
+      populateFields: [{  path: 'TraineeID', select: 'name contact'}],
+    });
+    res.status(200).json(paginatedResponse);
+   } catch (error) {
+     res.status(500).json({ message: "Failed to retrieve payments", error: error.message });
+   }
 };
 
 exports.getPaymentById = async (req, res) => {
