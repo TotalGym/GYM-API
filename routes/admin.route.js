@@ -7,14 +7,18 @@ const {
   updateAdmin,
   deleteAdmin,
 } = require("../controllers/admin.controller.js");
+const { 
+  createAdminValidation, 
+  updateAdminValidation, 
+  deleteAdminValidation 
+} = require("../utils/validators/admin.validator.js");
 
-// const authorizeRole = require("../middlewares/authorize.middleware.js");
-
+const validate = require("../middlewares/validate.middleware.js");
 
 router.get("/", getAdmins);
-router.post("/", createAdmin);
-router.put("/:id", updateAdmin);
-router.delete("/:id", deleteAdmin);
+router.post("/", validate(createAdminValidation), createAdmin);
+router.put("/:id", validate(updateAdminValidation), updateAdmin);
+router.delete("/:id", validate(deleteAdminValidation), deleteAdmin);
 
 module.exports = router;
 
