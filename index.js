@@ -20,6 +20,10 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 
+app.get('/', (req, res)=> {
+    res.send("Welcome to GYM API!")
+})
+
 app.use('/api/auth', routes.authRoutes);
 
 app.use(authenticate);
@@ -42,6 +46,3 @@ app.use(errorHandler);
 app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
 
 //local get
-app.get('/', (req, res)=> {
-    res.send("Welcome to GYM API!")
-})
