@@ -24,10 +24,6 @@ app.get('/', (req, res)=> {
 res.send("Welcome to GYM API!")
 });
 
-app.get('*', (req, res)=> {
-    res.status(404).send("Page Not Found");
-});
-
 app.use('/api/auth', routes.authRoutes);
 
 app.use(authenticate);
