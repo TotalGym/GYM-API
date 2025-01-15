@@ -17,12 +17,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 
-app.use(express.json())
-app.use(express.urlencoded({extended:false}))
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
 
 app.get('/', (req, res)=> {
-    res.send("Welcome to GYM API!")
-})
+res.send("Welcome to GYM API!")
+});
+
+app.get('*', (req, res)=> {
+    res.status(404).send("Page Not Found");
+});
 
 app.use('/api/auth', routes.authRoutes);
 

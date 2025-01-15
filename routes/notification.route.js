@@ -8,6 +8,7 @@ const {
 } = require("../controllers/notification.controller.js");
 const authorizeRole = require("../middlewares/authorize.middleware.js");
 const validate = require("../middlewares/validate.middleware.js");
+const { createNotificationValidation } = require("../utils/validators/notification.validator.js");
 
 router.post("/",
   authorizeRole(["SuperAdmin" , "Admin" , "Coach", "EquipmentManager" , "SalesManager"]), 
