@@ -1,6 +1,7 @@
 const Store = require('../models/store.model.js');
+const { paginatedResults } = require('../utils/pagination.js');
+const { search } = require('../utils/search.js');
 
-// Create Product
 const addProduct = async (req, res) => {
     const { productName, image, inventoryCount } = req.body;
     const product = new Store({ productName, image, inventoryCount });
@@ -12,17 +13,23 @@ const addProduct = async (req, res) => {
     }
 };
 
-// Get Products
 const getProducts = async (req, res) => {
-    try{
-        const products = await Store.find();
-        res.status(200).json(products);
-    }catch(error) {
+    try {
+        const searchTerm = req.query.search || '';
+        const query = search(Store, searchTerm);
+
+        const options = {
+            populateFields: [],
+        };
+
+        const paginatedResponse = await paginatedResults(Store, query, req, options);
+
+        res.status(200).json(paginatedResponse);
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
-//Get One Product
+  
 const getProduct = async (req, res) => {
     try {
       const id = req.params.id;
@@ -34,7 +41,6 @@ const getProduct = async (req, res) => {
     }
   };
 
-// Update Product
 const updateProduct = async (req, res) => {
     try{
         const { id } = req.params;
@@ -46,7 +52,6 @@ const updateProduct = async (req, res) => {
     }
 };
 
-// Delete Product
 const deleteProduct = async (req, res) => {
     try{
         const { id } = req.params;

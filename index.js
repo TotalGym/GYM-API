@@ -42,5 +42,8 @@ app.use('/api/admin', authorizeRole(["SuperAdmin"]), routes.adminRoutes);
 
 app.use(errorHandler);
 
+app.get('*', (req, res)=> {
+    res.status(404).send("Page Not Found");
+});
 
 app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));

@@ -28,17 +28,15 @@ exports.addSale = async (req, res) => {
   }
 };
 
-// Get all sales
 exports.getAllSales = async (req, res) => {
   try {
-    const sales = await SalesHistory.find().populate('ProductID', 'ProductName');  //read more about populate
+    const sales = await SalesHistory.find().populate('ProductID', 'ProductName');
     res.status(200).json(sales);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get sales by product
 exports.getSalesByProduct = async (req, res) => {
   const { productId } = req.params;
 
@@ -51,7 +49,6 @@ exports.getSalesByProduct = async (req, res) => {
 };
 
 
-//maybe not needed ?
 exports.deleteSale = async (req, res) => {
   const { id } = req.params;
 

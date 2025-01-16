@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
+//Add programId...
 const PaymentSchema = new mongoose.Schema({
   TraineeID: { type: ObjectId, ref: "Trainee", required: true },
   Amount: { type: Number, required: true },
