@@ -34,6 +34,7 @@ const traineeSchema = new mongoose.Schema({
     },
   ],
   selectedPrograms: [{ type: ObjectId, ref: "Program" }],
+  subscriptionType: {type: String, enum: ["monthly", "annually"], required: [true, "Add a Subscription Type"]},
   progress: {
     milestones: [String],
     metrics: { type: Map, of: String },

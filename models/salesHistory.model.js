@@ -12,7 +12,7 @@ const salesHistorySchema = new mongoose.Schema({
   TraineeID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Trainee',
-    required: true, 
+    required: false, 
   },
 
   SaleDate: {
@@ -21,19 +21,19 @@ const salesHistorySchema = new mongoose.Schema({
     required: true,
   },
 
-  QuantitySold: {
+  quantitySold: {
     type: Number,
     required: true,
     min: 1,
   },
 
-  Price: {
+  price: {
     type: Number,
     required: [true, "You must provide a price"],
     min: 0,
   },
 
-  TotalSaleValue: {
+  totalSaleValue: {
     type: Number,
     required: true,
   },
