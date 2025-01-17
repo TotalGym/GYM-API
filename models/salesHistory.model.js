@@ -43,12 +43,6 @@ const salesHistorySchema = new mongoose.Schema({
 }
 );
 
-//Calculate TotalSaleValue            // do this in forntEnd instade of backend ? duplication ?
-salesHistorySchema.pre('save', function (next) {
-  this.TotalSaleValue = this.QuantitySold * this.Price;
-  next();
-});
-
 const SalesHistory = mongoose.model('SalesHistory', salesHistorySchema);
 
 module.exports = SalesHistory;
