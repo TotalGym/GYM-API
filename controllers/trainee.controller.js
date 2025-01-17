@@ -7,11 +7,56 @@ const {search} = require("../utils/search.js");
 
 exports.createTrainee = async (req, res) => {
   try {
-    const trainee = new Trainee(req.body);
+    const {
+      name,
+      contact,
+      gender,
+      membership: { startDate } = {},
+      subscriptionType,
+      selectedPrograms = [],
+    } = req.body;
+
+    if (!name || !contact || !gender || !startDate || !subscriptionType) {
+      return res.status(400).json({
+        message:
+          "Missing required fields: name, contact, gender, startDate, or subscriptionType or mandatory.",
+      });
+    }
+
+    if (!contact.email || !contact.phoneNumber) {
+      return res
+        .status(400)
+        .json({ message: "Contact must include email and phone number." });
+    }
+
+    let endDate;
+    const start = new Date(startDate);
+
+    if (subscriptionType === "monthly") {
+      endDate = new Date(start);
+      endDate.setMonth(endDate.getMonth() + 1);
+    } else if (subscriptionType === "annually") {
+      endDate = new Date(start);
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      return res.status(400).json({
+        message: "Invalid subscriptionType. Must be either 'monthly' or 'annually'.",
+      });
+    }
+
+    const trainee = new Trainee({
+      name,
+      contact,
+      gender,
+      membership: { startDate, endDate },
+      selectedPrograms,
+    });
+
     await trainee.save();
     res.status(201).json(trainee);
+  
   } catch (error) {
-    res.status(400).json({ message: "Error creating trainee " + error.message });
+    res.status(400).json({ message: `Error creating trainee: ${error.message}` });
   }
 };
 
