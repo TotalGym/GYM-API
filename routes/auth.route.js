@@ -6,11 +6,11 @@ const { loginValidation, changePasswordValidation, forgotPasswordValidation, ver
 const router = express.Router();
 
 
-router.post("/login", loginValidation ,login);
-router.put("/changePassword/:id", changePasswordValidation, authenticate, changePassword);
-router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
-router.post("/verify", verifyResetCodeValidation, verifyResetCode);
-router.put("/reset-password", resetPasswordValidation, resetPassword);
+router.post("/login" ,login);
+router.put("/changePassword/:id", authenticate, changePassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify", verifyResetCode);
+router.put("/reset-password", resetPassword);
 
 
 module.exports = router;
