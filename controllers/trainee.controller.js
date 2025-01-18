@@ -50,6 +50,7 @@ exports.createTrainee = async (req, res) => {
       gender,
       membership: { startDate, endDate },
       selectedPrograms,
+      subscriptionType
     });
 
     await trainee.save();
@@ -69,15 +70,20 @@ exports.selectProgram = async (req, res) => {
     if (!program) {
       return res.status(404).json({ message: "Program not found" });
     }
+
     const trainee = await Trainee.findById(traineeId);
     if (!trainee) {
       return res.status(404).json({ message: "Trainee not found" });
     }
-    if (trainee.selectedPrograms.includes(programId)) {
+
+    if (trainee.selectedPrograms.some(p => p.programId === programId)) {
       return res.status(400).json({ message: "Trainee is already enrolled in this program" });
     }
 
-    trainee.selectedPrograms.push(programId);
+    trainee.selectedPrograms.push({
+      programId,
+      enrollmentDate: new Date(),
+    });
 
     await trainee.save();
 
@@ -86,9 +92,78 @@ exports.selectProgram = async (req, res) => {
 
     res.status(200).json({ message: "Program selected successfully", trainee });
   } catch (error) {
-    res.status(500).json({ message: "Error selecting program " + error.message });
+    res.status(500).json({ message: "Error selecting program: " + error.message });
   }
 };
+
+exports.changeProgram = async (req, res) => {
+  const { traineeId, oldProgramId } = req.params;
+  const { newProgramName } = req.body;  // Get new program name from body
+
+  try {
+    const trainee = await Trainee.findById(traineeId);
+    if (!trainee) {
+      return res.status(404).json({ message: "Trainee not found" });
+    }
+
+    const selectedProgram = trainee.selectedPrograms.find(
+      p => p.programId && p.programId.toString() === oldProgramId
+    );
+
+    if (!selectedProgram) {
+      return res.status(400).json({ message: "Trainee is not enrolled in this program" });
+    }
+
+    const enrollmentDate = new Date(selectedProgram.enrollmentDate);
+    const currentDate = new Date();
+    const daysSinceEnrollment = Math.floor(
+      (currentDate - enrollmentDate) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysSinceEnrollment > 7) {
+      return res.status(400).json({
+        message: "Change period has expired (7 days from enrollment)",
+      });
+    }
+
+    // Find the new program by name
+    const newProgram = await Program.findOne({ programName: newProgramName });
+    if (!newProgram) {
+      return res.status(404).json({ message: "New program not found" });
+    }
+
+    // Remove the old program from the trainee's selectedPrograms
+    trainee.selectedPrograms = trainee.selectedPrograms.filter(
+      p => p.programId.toString() !== oldProgramId
+    );
+
+    // Add the new program to the trainee's selectedPrograms
+    trainee.selectedPrograms.push({
+      programId: newProgram._id, // Add the new program's ObjectId
+      enrollmentDate: currentDate,
+    });
+    await trainee.save();
+
+    // Update the old program by removing the trainee from the registeredTrainees
+    const oldProgram = await Program.findById(oldProgramId);
+    if (oldProgram) {
+      oldProgram.registeredTrainees = oldProgram.registeredTrainees.filter(
+        id => id.toString() !== traineeId
+      );
+      await oldProgram.save();
+    }
+
+    // Add the trainee to the new program's registeredTrainees
+    newProgram.registeredTrainees.push(traineeId);
+    await newProgram.save();
+
+    res.status(200).json({ message: "Program changed successfully", trainee });
+  } catch (error) {
+    res.status(500).json({ message: "Error changing program: " + error.message });
+  }
+};
+
+
 
 
 exports.getTrainees = async (req, res) => {
@@ -96,7 +171,7 @@ exports.getTrainees = async (req, res) => {
     const searchQuery = search(Trainee, req.query.search);
     const response = await paginatedResults(Trainee, searchQuery, req, {
       populateFields: [
-        { path: 'selectedPrograms', select: 'programName monthlyPrice' },
+        { path: 'selectedPrograms', select: 'programName' },
       ],
     });
 
@@ -118,16 +193,37 @@ exports.getTraineeById = async (req, res) => {
   };
 
 
-exports.updateTrainee = async (req, res) => { // Make sure that the admin can't changhe all the data
-  try {
-    const trainee = await Trainee.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!trainee) return res.status(404).json({ message: "Trainee not found" });
-    res.status(200).json(trainee);
-  } catch (error) {
-    res.status(400).json({ message: "Error updating trainee " + error.message });
-  }
+exports.updateTrainee = async (req, res) => {
+    try {
+      const userRole = req.user.role;
+      if (userRole !== "Admin" && userRole !== "SuperAdmin") {
+        return res.status(403).json({ message: "You are not authorized to update trainee data." });
+      }
+  
+      const allowedFields = ["paymentVerification", "name", "contact", "subscriptionType"];
+  
+      const updates = {};
+      Object.keys(req.body).forEach((key) => {
+        if (allowedFields.includes(key)) {
+          updates[key] = req.body[key];
+        }
+      });
+  
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update or no updates provided." });
+      }
+  
+      const trainee = await Trainee.findByIdAndUpdate(req.params.id, updates, { new: true });
+      if (!trainee) {
+        return res.status(404).json({ message: "Trainee not found" });
+      }
+  
+      res.status(200).json({ message: "Trainee updated successfully", trainee });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating trainee: " + error.message });
+    }
 };
-
+  
 exports.deleteTrainee = async (req, res) => {
   try {
     const trainee = await Trainee.findByIdAndDelete(req.params.id);

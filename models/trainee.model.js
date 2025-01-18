@@ -39,6 +39,7 @@ const traineeSchema = new mongoose.Schema({
     milestones: [String],
     metrics: { type: Map, of: String },
   },
+  paymentVerification: {type: Boolean, required: [false, "Payment status"]} // for dashboard only, 
 },
 {
   timestamps: true,

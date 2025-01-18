@@ -10,7 +10,8 @@ const programSchema = mongoose.Schema({
         },
     ],
     description: { type: String, required: true},
-    monthlyPrice: { type: Number, required: true },
+    monthlyPrice: { type: Number, required: false },
+    annuallyPrice: { type: Number },
     image: { type: String, required: true},
     schedule: [
         {
