@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
@@ -14,9 +13,6 @@ const traineeSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: [6, "Password must be at least 6 characters"],
-    default: function () {
-      return this.contact.phoneNumber;
-    },
   },
   passwordChangedAt: Date,
   passwordResetCode: String,
@@ -45,12 +41,5 @@ const traineeSchema = new mongoose.Schema({
   timestamps: true,
 }
 );
-
-
-traineeSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
 
 module.exports = mongoose.model("Trainee", traineeSchema);

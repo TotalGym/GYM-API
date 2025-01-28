@@ -1,16 +1,17 @@
 const express = require("express");
 const {login, changePassword, forgotPassword, verifyResetCode, resetPassword} = require("../controllers/auth/auth.controller.js");
 const { authenticate } = require("../middlewares/authenticate.js");
+const validation = require("../middlewares/validate.middleware.js");
 const { loginValidation, changePasswordValidation, forgotPasswordValidation, verifyResetCodeValidation, resetPasswordValidation } = require("../utils/validators/auth.validator.js");
 
 const router = express.Router();
 
 
-router.post("/login" ,login);
-router.put("/changePassword/:id", authenticate, changePassword);
-router.post("/forgot-password", forgotPassword);
-router.post("/verify", verifyResetCode);
-router.put("/reset-password", resetPassword);
+router.post("/login", validation(loginValidation) ,login);
+router.put("/changePassword/:id", validation(changePasswordValidation), authenticate, changePassword);
+router.post("/forgot-password", validation(forgotPasswordValidation), forgotPassword);
+router.post("/verify", validation(verifyResetCodeValidation), verifyResetCode);
+router.put("/reset-password", validation(resetPasswordValidation), resetPassword);
 
 
 module.exports = router;

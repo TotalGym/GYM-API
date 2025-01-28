@@ -13,8 +13,16 @@ exports.createTrainee = async (req, res) => {
       gender,
       membership: { startDate } = {},
       subscriptionType,
+      password,
       selectedPrograms = [],
     } = req.body;
+
+    const existingTrainee = await Trainee.findOne({ "contact.email": contact.email });
+    if (existingTrainee) {
+      return res
+        .status(400)
+        .json({ message: "Email is already in use by another trainee." });
+    }
 
     if (!name || !contact || !gender || !startDate || !subscriptionType) {
       return res.status(400).json({
@@ -28,6 +36,8 @@ exports.createTrainee = async (req, res) => {
         .status(400)
         .json({ message: "Contact must include email and phone number." });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     let endDate;
     const start = new Date(startDate);
@@ -50,7 +60,8 @@ exports.createTrainee = async (req, res) => {
       gender,
       membership: { startDate, endDate },
       selectedPrograms,
-      subscriptionType
+      subscriptionType,
+      password: hashedPassword,
     });
 
     await trainee.save();
@@ -98,7 +109,7 @@ exports.selectProgram = async (req, res) => {
 
 exports.changeProgram = async (req, res) => {
   const { traineeId, oldProgramId } = req.params;
-  const { newProgramName } = req.body;  // Get new program name from body
+  const { newProgramName } = req.body;
 
   try {
     const trainee = await Trainee.findById(traineeId);
@@ -126,25 +137,21 @@ exports.changeProgram = async (req, res) => {
       });
     }
 
-    // Find the new program by name
     const newProgram = await Program.findOne({ programName: newProgramName });
     if (!newProgram) {
       return res.status(404).json({ message: "New program not found" });
     }
 
-    // Remove the old program from the trainee's selectedPrograms
     trainee.selectedPrograms = trainee.selectedPrograms.filter(
       p => p.programId.toString() !== oldProgramId
     );
 
-    // Add the new program to the trainee's selectedPrograms
     trainee.selectedPrograms.push({
-      programId: newProgram._id, // Add the new program's ObjectId
+      programId: newProgram._id,
       enrollmentDate: currentDate,
     });
     await trainee.save();
 
-    // Update the old program by removing the trainee from the registeredTrainees
     const oldProgram = await Program.findById(oldProgramId);
     if (oldProgram) {
       oldProgram.registeredTrainees = oldProgram.registeredTrainees.filter(
@@ -153,7 +160,6 @@ exports.changeProgram = async (req, res) => {
       await oldProgram.save();
     }
 
-    // Add the trainee to the new program's registeredTrainees
     newProgram.registeredTrainees.push(traineeId);
     await newProgram.save();
 

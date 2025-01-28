@@ -1,6 +1,7 @@
 const express = require('express');
 const dbConnection = require("./config/database");
 const dotenv = require("dotenv");
+const cors = require('cors');
 
 const errorHandler = require("./middlewares/error.middleware.js");
 const routes = require('./utils/routes');
@@ -14,6 +15,7 @@ dotenv.config();
 dbConnection();
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 
 

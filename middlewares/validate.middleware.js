@@ -1,11 +1,24 @@
-const validate = (schema) => {
+const validation = (schema) => {
   return async (req, res, next) => {
+    const data = {
+      body: req.body,
+      params: req.params,
+      query: req.query,
+    };
+
     try {
-      await schema.validate({
-        body: req.body,
-        params: req.params,
-        query: req.query,
-      });
+      if (schema.body) {
+        await schema.body.validate(data.body, { abortEarly: false });
+      }
+
+      if (schema.params) {
+        await schema.params.validate(data.params, { abortEarly: false });
+      }
+
+      if (schema.query) {
+        await schema.query.validate(data.query, { abortEarly: false });
+      }
+
       next();
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -13,4 +26,4 @@ const validate = (schema) => {
   };
 };
 
-module.exports = validate;
+module.exports = validation;

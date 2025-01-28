@@ -13,12 +13,12 @@ const {
   deleteAdminValidation 
 } = require("../utils/validators/admin.validator.js");
 
-const validate = require("../middlewares/validate.middleware.js");
+const validatation = require("../middlewares/validate.middleware.js");
 
 router.get("/", getAdmins);
-router.post("/", validate(createAdminValidation), createAdmin);
-router.put("/:id", validate(updateAdminValidation), updateAdmin);
-router.delete("/:id", validate(deleteAdminValidation), deleteAdmin);
+router.post("/", validatation(createAdminValidation), createAdmin);
+router.put("/:id", validatation(updateAdminValidation), updateAdmin);
+router.delete("/:id", validatation(deleteAdminValidation), deleteAdmin);
 
 module.exports = router;
 

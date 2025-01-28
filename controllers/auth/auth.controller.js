@@ -25,6 +25,7 @@ exports.login = async (req, res) => {
 
     for (const { model, query } of models) {
       user = await model.findOne(query);
+      console.log(user);
     
       if (user) {
         userRole = user.role;
@@ -34,7 +35,8 @@ exports.login = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password.trim(), user.password);
+    
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
@@ -43,7 +45,14 @@ exports.login = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.status(200).json({ token });
+    const userData = {
+      name : user.name,
+      email: user.contact?.email || user.email,
+      role : userRole,
+      id: user._id
+    }
+
+    res.status(200).json({ token, userData });
   } catch (error) {
     res.status(500).json({ message: "Error: " +  error.message });
   }

@@ -6,7 +6,7 @@ const loginValidation = {
       .string()
       .email("Must be a valid email")
       .required("Email is required"),
-    password: yup.string().required("Password is required"),
+    password: yup.string().min(6).required("Password is required"),
   }),
 };
 
