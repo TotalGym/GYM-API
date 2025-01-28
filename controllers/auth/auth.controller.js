@@ -25,7 +25,6 @@ exports.login = async (req, res) => {
 
     for (const { model, query } of models) {
       user = await model.findOne(query);
-      console.log(user);
     
       if (user) {
         userRole = user.role;
