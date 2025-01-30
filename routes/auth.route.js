@@ -14,4 +14,8 @@ router.post("/verify", validation(verifyResetCodeValidation), verifyResetCode);
 router.put("/reset-password", validation(resetPasswordValidation), resetPassword);
 
 
+router.get("/user", authenticate, (req, res) => {
+    res.json({ authenticated: true, user: req.user });
+});
+
 module.exports = router;
