@@ -15,7 +15,11 @@ router.put("/reset-password", validation(resetPasswordValidation), resetPassword
 
 
 router.get("/user", authenticate, (req, res) => {
-    res.json({ authenticated: true, user: req.user });
+    try {
+        res.json({ authenticated: true, user: req.user });
+    } catch (error) {
+        res.json(error.message);
+    }
 });
 
 module.exports = router;
