@@ -138,7 +138,7 @@ exports.forgotPassword = async (req, res) => {
       await sendEmail({
         to: email,
         subject: "Password Reset OTP",
-        message: `Your OTP for password reset is ${otp}. It is valid for 15 minutes.`,
+        message: `Your OTP is ${otp}. It is valid for 15 minutes.`,
       });
     } catch (error) {
       console.log(error.message);
@@ -242,5 +242,23 @@ exports.resetPassword = async (req, res) => {
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error resetting password - " + error.message });
+  }
+};
+
+
+exports.getLoggedUser = (req, res) => {
+  try {
+      res.json({ authenticated: true, user: req.user });
+  } catch (error) {
+      res.json({error: error.message});
+  }
+};
+
+
+exports.checkAuth = (req, res) => {
+  try {
+      res.json({ authenticated: true });
+  } catch (error) {
+      res.json({ authenticated: false ,error: error.message });
   }
 };
