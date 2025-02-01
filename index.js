@@ -16,10 +16,11 @@ dotenv.config();
 dbConnection();
 
 const app = express();
-app.use(cors({
-    origin: "http://localhost:5173" || process.env.PRODUCTION_BUILD,
-    credentials: true,
-  }));
+app.use(cors({   
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(cookieParser()); 
 
 const PORT = process.env.PORT || 3000;
