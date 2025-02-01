@@ -2,6 +2,7 @@ const express = require('express');
 const dbConnection = require("./config/database");
 const dotenv = require("dotenv");
 const cors = require('cors');
+const cookieParser = require("cookie-parser");
 
 const errorHandler = require("./middlewares/error.middleware.js");
 const routes = require('./utils/routes');
@@ -15,7 +16,9 @@ dotenv.config();
 dbConnection();
 
 const app = express();
-app.use(cors());
+app.use(cors({credentials:true}));
+app.use(cookieParser()); 
+
 const PORT = process.env.PORT || 3000;
 
 
