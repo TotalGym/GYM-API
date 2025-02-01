@@ -6,6 +6,7 @@ const sendEmail = require("../../utils/sendEmail.js");
 const Trainee = require("../../models/trainee.model.js");
 const Staff = require("../../models/staff.model.js");
 const Admin = require("../../models/admin.model.js");
+const generateToken = require("../../utils/generateToken.js");
 
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -38,11 +39,21 @@ exports.login = async (req, res) => {
     
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, role: userRole },
-      SECRET_KEY,
-      { expiresIn: '1d' }
-    );
+    const { accessToken, refreshToken } = generateToken(user);
+
+   res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     const userData = {
       name : user.name,
@@ -51,7 +62,7 @@ exports.login = async (req, res) => {
       id: user._id
     }
 
-    res.status(200).json({ token, userData });
+    res.status(200).json({ message: "Logged in successfully", accessToken, userData });
   } catch (error) {
     res.status(500).json({ message: "Error: " +  error.message });
   }
@@ -244,6 +255,42 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: "Error resetting password - " + error.message });
   }
 };
+
+exports.refreshToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Unauthorized: Refresh token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY);
+    const { id, role } = decoded;
+
+    const { accessToken, refreshToken: newRefreshToken } = generateToken({ id, role });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ message: "Token refreshed" });
+
+  } catch (error) {
+    console.error("Refresh Token Error:", error);
+    return res.status(403).json({ message: "Forbidden: Invalid refresh token" });
+  }
+};
+
 
 
 exports.getLoggedUser = (req, res) => {
