@@ -16,7 +16,7 @@ dotenv.config();
 dbConnection();
 
 const allowedOrigins = [
-    procces.env.PRODUCTION_BUILD,
+    process.env.PRODUCTION_BUILD,
     process.env.DEVELOPMENT_BUILD
 ]
 
