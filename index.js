@@ -16,10 +16,25 @@ dotenv.config();
 dbConnection();
 
 const app = express();
-app.use(cors({   
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+const allowedOrigins = [
+    process.env.PRODUCTION_BUILD,
+    process.env.DEVELOPMENT_BUILD,
+];
+
+console.log(    process.env.PRODUCTION_BUILD,
+    process.env.DEVELOPMENT_BUILD,)
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
 app.use(cookieParser()); 
 
