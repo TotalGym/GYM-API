@@ -15,8 +15,24 @@ dotenv.config();
 //connect to databse
 dbConnection();
 
+const allowedOrigins = [
+    procces.env.PRODUCTION_BUILD,
+    process.env.DEVELOPMENT_BUILD
+]
+
 const app = express();
-app.use(cors({credentials: true}));
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+  
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+}));
 app.use(cookieParser()); 
 
 const PORT = process.env.PORT || 3000;
