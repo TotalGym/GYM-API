@@ -12,8 +12,9 @@ exports.createPayment = async (req, res) => {
     if (!trainee) return res.status(404).json({ message: "Trainee not found" });
     
     let PaymentDate = new Date();
+    let DueDate= trainee.membership.endDate;
     
-    const payment = new Payment({ TraineeID, Amount, Status, DueDate:trainee.membership.endDate, PaymentDate });
+    const payment = new Payment({ TraineeID, Amount, Status, DueDate, PaymentDate });
     const savedPayment = await payment.save();
 
     const currentEndDate = new Date(trainee.membership.endDate);
