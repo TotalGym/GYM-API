@@ -2,7 +2,6 @@ const express = require('express');
 const dbConnection = require("./config/database");
 const dotenv = require("dotenv");
 const cors = require('cors');
-const cookieParser = require("cookie-parser");
 
 const errorHandler = require("./middlewares/error.middleware.js");
 const routes = require('./utils/routes');
@@ -16,13 +15,12 @@ dotenv.config();
 dbConnection();
 
 const app = express();
+
 const allowedOrigins = [
     process.env.PRODUCTION_BUILD,
     process.env.DEVELOPMENT_BUILD,
 ];
 
-console.log(    process.env.PRODUCTION_BUILD,
-    process.env.DEVELOPMENT_BUILD,)
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -34,9 +32,7 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
 }));
-app.use(cookieParser()); 
 
 const PORT = process.env.PORT || 3000;
 

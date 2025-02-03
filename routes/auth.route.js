@@ -13,7 +13,6 @@ router.post("/forgot-password", validation(forgotPasswordValidation), forgotPass
 router.post("/verify", validation(verifyResetCodeValidation), verifyResetCode);
 router.put("/reset-password", validation(resetPasswordValidation), resetPassword);
 
-router.post("/refresh", authenticate, refreshToken);
 router.get("/user", authenticate, getLoggedUser);
 router.get("/check-auth", authenticate, checkAuth);
 

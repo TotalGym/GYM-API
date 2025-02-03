@@ -9,7 +9,6 @@ const Admin = require("../../models/admin.model.js");
 const generateToken = require("../../utils/generateToken.js");
 
 require("dotenv").config();
-const SECRET_KEY = process.env.SECRET_KEY;
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -39,20 +38,8 @@ exports.login = async (req, res) => {
     
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
-    const { accessToken, refreshToken } = generateToken(user);
-
-   res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      sameSite: "None",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    const { token } = generateToken(user);
+  
     const userData = {
       name : user.name,
       email: user.contact?.email || user.email,
@@ -60,7 +47,7 @@ exports.login = async (req, res) => {
       id: user._id
     }
 
-    res.status(200).json({ message: "Logged in successfully", accessToken, userData });
+    res.status(200).json({ message: "Logged In Successfully", token, userData });
   } catch (error) {
     res.status(500).json({ message: "Error: " +  error.message });
   }
@@ -139,7 +126,7 @@ exports.forgotPassword = async (req, res) => {
     const hashedOtp = await bcrypt.hash(otp, 10);
 
     user.passwordResetCode = hashedOtp;
-    user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // OTP valid for 15 minutes
+    user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
     try {
@@ -254,44 +241,18 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.refreshToken = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-
-  if (!refreshToken) {
-    return res.status(401).json({ message: "Unauthorized: Refresh token missing" });
-  }
-
-  try {
-    const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY);
-    const { id, role } = decoded;
-
-    const { accessToken, refreshToken: newRefreshToken } = generateToken({ id, role });
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      sameSite: "None",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.status(200).json({ message: "Token refreshed" });
-
-  } catch (error) {
-    console.error("Refresh Token Error:", error);
-    return res.status(403).json({ message: "Forbidden: Invalid refresh token" });
-  }
-};
-
-
-
 exports.getLoggedUser = (req, res) => {
   try {
-      res.json({ authenticated: true, user: req.user });
+    const user = req.user;
+
+    const userData = {
+      name : user.name,
+      email: user.contact?.email || user.email,
+      role : user.role,
+      id: user._id
+    }
+    
+    res.json({ userData });
   } catch (error) {
       res.json({error: error.message});
   }
