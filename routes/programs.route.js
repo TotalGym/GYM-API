@@ -9,7 +9,7 @@ router.route('/')
     .post(authorizeRole(["Admin", "SuperAdmin", "Coach"]), validation(createProgramValidation), createProgram)
     .get(getPrograms);
     
-router.get('/program', getProgramByName);
+router.get('/program/:name', getProgramByName);
 
 router.route('/:id')
     .put(authorizeRole(["Admin", "SuperAdmin", "Coach"]), validation(updateProgramValidation), updateProgram)

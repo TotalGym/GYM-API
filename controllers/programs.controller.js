@@ -40,7 +40,7 @@ const getProgramById = async (req, res) => {
 };
 
 const getProgramByName = async (req, res) => {
-    const { name } = req.query;
+    const { name } = req.params;
     if (!name) return res.status(400).json({ message: "Program name is required" });
 
     try {
