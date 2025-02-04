@@ -28,7 +28,7 @@ const getPrograms = async (req, res) => {
       }
 };
 
-const getProgram = async (req, res) => {
+const getProgramById = async (req, res) => {
     const {id} = req.params;
     try {
         const program = await Program.findById(id);
@@ -36,6 +36,20 @@ const getProgram = async (req, res) => {
         res.status(200).json(program);
     } catch (error) {
         res.status(500).json({message: error.message});
+    }
+};
+
+const getProgramByName = async (req, res) => {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ message: "Program name is required" });
+
+    try {
+        const program = await Program.findOne({ programName: { $regex: name, $options: 'i' } });
+        if (!program) return res.status(404).json({ message: "Program not found" });
+
+        res.status(200).json(program);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -60,4 +74,4 @@ const deleteProgram = async (req, res) => {
     }
 };
 
-module.exports = { createProgram, getPrograms, updateProgram, deleteProgram, getProgram};
+module.exports = { createProgram, getPrograms, updateProgram, deleteProgram, getProgramById, getProgramByName};
