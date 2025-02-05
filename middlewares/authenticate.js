@@ -34,6 +34,9 @@ const authenticate = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Unauthorized: Token expired" });
+    }
     return res.status(403).json({ message: "Forbidden: Invalid token, " + error.message });
   }
 };
