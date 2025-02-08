@@ -7,6 +7,10 @@ const addProduct = async (req, res) => {
     const product = new Store({ productName, image, inventoryCount });
     try{
         const savedProduct = await product.save();
+
+        delete savedProduct.__v;
+        delete savedProduct.updatedAt;
+
         res.status(201).json(savedProduct);
     }catch(error) {
         res.status(500).json({ message: error.message });
@@ -33,7 +37,7 @@ const getProducts = async (req, res) => {
 const getProduct = async (req, res) => {
     try {
       const id = req.params.id;
-      const product = await Store.findById(id);
+      const product = await Store.findById(id).select("-__v -updatedAt");
       if (!product) return res.status(404).json({ message: 'Product not found' });
       res.status(200).json(product);
     } catch (error) {
@@ -44,7 +48,7 @@ const getProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try{
         const { id } = req.params;
-        const updatedProduct = await Store.findByIdAndUpdate(id, req.body, { new: true });
+        const updatedProduct = await Store.findByIdAndUpdate(id, req.body, { new: true }).select("-__v -updatedAt");
         if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
         res.status(200).json(updatedProduct);
     }catch (error){

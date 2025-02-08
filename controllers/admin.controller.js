@@ -1,16 +1,21 @@
 const Admin = require("../models/admin.model");
 const bcrypt = require("bcrypt");
+const { search } = require("../utils/search");
+const { paginatedResults } = require("../utils/pagination");
 
 
 exports.getAdmins = async (req, res) => {
-    try {
-      const admins = await Admin.find();
-      res.status(200).json({ admins });
-    } catch (error) {
-      res.status(500).json({ message: "Something went wrong", error });
-    }
-};
+  try {
+    const searchTerm = req.query.search || "";
+    const query = search(Admin, searchTerm);
 
+    const admins = await paginatedResults(Admin, query, req);
+
+    res.status(200).json(admins);
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong", error: error.message });
+  }
+};
 
 exports.createAdmin = async (req, res) => {
     try {
@@ -31,8 +36,13 @@ exports.createAdmin = async (req, res) => {
         role,
       });
   
-      await newAdmin.save();
-      res.status(201).json({ message: "Admin created successfully", admin: newAdmin });
+      const addedAdmin =  await newAdmin.save();
+
+      delete addedAdmin.__v;
+      delete addedAdmin.password;
+      delete addedAdmin.updatedAt;
+
+      res.status(201).json({ message: "Admin created successfully", admin: addedAdmin });
     } catch (error) {
       res.status(500).json({ message: "Something went wrong", error });
     }
@@ -48,7 +58,7 @@ exports.createAdmin = async (req, res) => {
     }
   
     try {
-      const admin = await Admin.findByIdAndUpdate(id, updates, { new: true });
+      const admin = await Admin.findByIdAndUpdate(id, updates, { new: true }).select("-__v -password -updatedAt");
       if (!admin) return res.status(404).json({ message: "Admin not found" });
   
       res.status(200).json({ message: "Admin updated successfully", admin });

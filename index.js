@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const cors = require('cors');
 
 const errorHandler = require("./middlewares/error.middleware.js");
-const routes = require('./utils/routes');
+const routes = require('./utils/split-routes/routes.js');
 const { authenticate } = require('./middlewares/authenticate.js');
 const authorizeRole = require('./middlewares/authorize.middleware.js');
 
