@@ -30,12 +30,13 @@ const traineeSchema = new mongoose.Schema({
     },
   ],
   selectedPrograms: [{ type: ObjectId, ref: "Program" }],
-  subscriptionType: {type: String, enum: ["monthly", "annually"], required: [true, "Add a Subscription Type"]},
+  subscriptionType: {type: String, enum: ["monthly", "annually"], required: [false, "Add a Subscription Type"]}, //false for now
+  assignedCoach: [{ type: ObjectId, ref: "Staff", default: null }],
   progress: {
     milestones: [String],
     metrics: { type: Map, of: String },
   },
-  paymentVerification: {type: Boolean, required: [false, "Payment status"]} // for dashboard only, 
+  paymentVerification: {type: Boolean, required: [false, "Payment status"]} // for dashboard only,
 },
 {
   timestamps: true,

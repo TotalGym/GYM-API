@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
-//Add programId...
 const PaymentSchema = new mongoose.Schema({
   TraineeID: { type: ObjectId, ref: "Trainee", required: true },
+  // ProgramID: { type: ObjectId, ref: "Program", required: true },  apply this !
   Amount: { type: Number, required: true },
   Status: { type: String, enum: ["Paid", "Pending"], required: true , default: "Paid"},
   DueDate: { type: Date, required: true },

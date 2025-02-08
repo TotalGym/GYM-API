@@ -6,6 +6,9 @@ const staffSchema = new mongoose.Schema({
     type: String, 
     required: [true, "Provide the role for this staff"],
     enum: ["Coach" , "EquipmentManager" , "SalesManager"],
+    set: (role) => role.split(/(?=[A-Z])|[_\s-]/)
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                  .join("")
   },
   contact: {
     email: { type: String, required: true, unique: true, lowercase:true },
@@ -23,11 +26,11 @@ const staffSchema = new mongoose.Schema({
   attendance: [
     {
       date: { type: Date, default: Date.now },
-      status: { type: String, enum: ["Present", "Absent", "On Leave"], required: true }
+      status: { type: String, enum: ["Present", "Absent", "On Leave"], required: false }
     }
   ],
   payroll: {
-    salary: { type: Number, required: true },
+    salary: { type: Number, required: false },
     bonus: { type: Number, default: 0 },
     deductions: { type: Number, default: 0 },
     payDate: { type: Date }
@@ -41,10 +44,6 @@ const staffSchema = new mongoose.Schema({
 staffSchema.pre("save", async function (next) {
   if (!this.password) {
     this.password = this.contact.phoneNumber;
-  }
-
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 10);
   }
   next();
 });

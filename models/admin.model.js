@@ -24,10 +24,9 @@ const adminSchema = new mongoose.Schema({
     type: String,
     enum: ["SuperAdmin", "Admin"],
     required: true,
-  },
-  lastLogin: {
-    type: Date,
-    default: null,
+    set: (role) => role.split(/(?=[A-Z])|[_\s-]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("")
   },
 },
 {
