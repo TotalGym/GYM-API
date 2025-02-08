@@ -9,7 +9,12 @@ exports.paginatedResults = async (model, query, req, options = {}) => {
 
   const startIndex = (page - 1) * limit;
 
-  let dbQuery = model.find(query).sort({ [sortField]: sortOrder }).limit(limit).skip(startIndex); //Add populate before search
+  let dbQuery = model
+      .find(query)
+      .sort({ [sortField]: sortOrder })
+      .limit(limit).skip(startIndex)
+      .select("-password -__v -updatedAt");
+      //Add populate before search....
 
   if (populateFields.length > 0) {
     populateFields.forEach((field) => {

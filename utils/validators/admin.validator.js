@@ -12,7 +12,7 @@ const createAdminValidation = {
       .min(6, "Password must be at least 6 characters long")
       .required("Password is required"),
     role: yup.string()
-      .oneOf(["SuperAdmin", "Admin"], "Role must be either 'SuperAdmin' or 'Admin'")
+      .oneOf(["SuperAdmin", "Admin", "super admin", "admin", "superadmin"], "Role must be either 'SuperAdmin' or 'Admin'")
       .required("Role is required"),
   }),
 };

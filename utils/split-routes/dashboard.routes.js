@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const routes = require("../../utils/split-routes/routes.js");
-const authorizeRole = require("../middlewares/authorize.middleware.js");
+const authorizeRole = require("../../middlewares/authorize.middleware.js");
+const { authenticate } = require("../../middlewares/authenticate.js");
 
 router.use("/auth", routes.authRoutes);
 
 router.use(authenticate);
+
+app.use("/home", routes.dashboardHome);
 router.use("/admin", authorizeRole(["SuperAdmin"]), routes.adminRoutes);
 router.use("/staff", authorizeRole(["SuperAdmin", "Admin"]), routes.staffRoutes);
 router.use("/payments", authorizeRole(["SuperAdmin", "Admin"]), routes.paymentRoutes);
