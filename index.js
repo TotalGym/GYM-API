@@ -7,7 +7,6 @@ const errorHandler = require("./middlewares/error.middleware.js");
 const routes = require('./utils/split-routes/routes.js');
 const { authenticate } = require('./middlewares/authenticate.js');
 const authorizeRole = require('./middlewares/authorize.middleware.js');
-const sanitizeResponse = require('./middlewares/sanatize.middleware.js');
 
 
 dotenv.config();
@@ -40,7 +39,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
-app.use(sanitizeResponse);
 
 app.get('/', (req, res)=> {
 res.send("Welcome to GYM API!")
@@ -50,6 +48,7 @@ app.use('/api/auth', routes.authRoutes);
 
 app.use(authenticate);
 
+app.use('/api/dashboard', routes.dashboardHome)
 app.use('/api/equipment', routes.equipmentRoutes);
 app.use('/api/store', routes.storeRoutes);
 app.use('/api/sales', authorizeRole(["SuperAdmin", "Admin", "SalesManager"]), routes.salesHistoryRoutes);

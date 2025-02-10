@@ -1,6 +1,7 @@
 const SalesHistory = require('../models/salesHistory.model.js');
 const Store = require('../models/store.model.js');
 const { paginatedResults } = require('../utils/pagination.js');
+const { responseHandler } = require('../utils/responseHandler.js');
 const { search } = require('../utils/search.js');
 
 exports.Sell = async (req, res) => {
@@ -9,10 +10,10 @@ exports.Sell = async (req, res) => {
   try {
     const product = await Store.findById(ProductID);
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      if (!product) return responseHandler(res, 404, false, "Product not found");
     }
     if (product.inventoryCount < quantitySold) {
-      return res.status(400).json({ error: 'Insufficient inventory' });
+      return responseHandler(res, 400, false, "Insufficient inventory");
     }
     product.inventoryCount -= quantitySold;
     await product.save();
@@ -27,9 +28,9 @@ exports.Sell = async (req, res) => {
     });
     await sale.save();
 
-    res.status(201).json({ sale, product });
+    responseHandler(res, 201, true, "Sale recorded successfully", { sale, product });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    responseHandler(res, 500, false, "Failed to record sale", null, error.message);
   }
 };
 //todo: collect products being sold the most in each month for analytics
@@ -45,9 +46,9 @@ exports.getAllSales = async (req, res) => {
 
     const paginatedData = await paginatedResults(SalesHistory, searchQuery, req, options);
 
-    res.status(200).json(paginatedData);
+    responseHandler(res, 200, true, "Sales history retrieved successfully", paginatedData);
   } catch (error) {
-    res.status(500).json({ message: `Error fetching sales: ${error.message}` });
+    responseHandler(res, 500, false, `Error fetching sales`, null, error.message);
   }
 };
 
@@ -57,9 +58,9 @@ exports.getSalesByProduct = async (req, res) => {
 
   try {
     const sales = await SalesHistory.find({ ProductID: productId }).populate('ProductID', 'ProductName');
-    res.status(200).json(sales);
+    responseHandler(res, 200, true, "Sales history for product retrieved successfully", sales);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    responseHandler(res, 500, false, "Failed to retrieve sales", null, error.message);
   }
 };
 
@@ -69,12 +70,11 @@ exports.deleteSale = async (req, res) => {
 
   try {
     const sale = await SalesHistory.findByIdAndDelete(id);
-    if (!sale) {
-      return res.status(404).json({ error: 'This Sale History not found' });
-    }
-    res.status(204).send();
+    if (!sale) return responseHandler(res, 404, false, "Sale history not found");
+
+    responseHandler(res, 200, true, "Sale history deleted successfully");
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    responseHandler(res, 500, false, "Failed to delete sale history", null, error.message);
   }
 };
 
@@ -103,9 +103,9 @@ exports.getFilteredSales = async (req, res) => {
         saleDate: sale.SaleDate,
       }));
   
-      res.status(200).json(formattedSales);
+      responseHandler(res, 200, true, "Filtered sales retrieved successfully", formattedSales);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      responseHandler(res, 500, false, "Failed to retrieve filtered sales", null, error.message);
     }
   };
   

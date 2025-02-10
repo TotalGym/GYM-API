@@ -7,7 +7,7 @@ const EquipmentSchema = new mongoose.Schema({
   image: { type: String, required: [true, "Please add an image"] },
   status: { 
     type: String, 
-    enum: ['Available', 'In Use', 'Under Maintenance'], 
+    enum: ['Available', 'Under Maintenance'], 
     required: [true, "Enter the status of the equipment"] 
   },  
 },

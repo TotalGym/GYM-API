@@ -1,5 +1,6 @@
 const Staff = require("../models/staff.model.js");
 const { paginatedResults } = require("../utils/pagination.js");
+const { responseHandler } = require("../utils/responseHandler.js");
 const { search } = require("../utils/search.js");
 const bcrypt = require("bcrypt");
 
@@ -10,19 +11,20 @@ exports.getAllStaff = async (req, res) => {
 
     const paginatedResponse = await paginatedResults(Staff, query, req);
 
-    res.status(200).json(paginatedResponse);
+    responseHandler(res, 200, true, "Staff retrieved successfully", paginatedResponse);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching staff " + error.message });
+    responseHandler(res, 500, false, "Error fetching staff", null, error.message);
   }
 };
 
 exports.getStaffById = async (req, res) => {
   try {
-    const staff = await Staff.findById(req.params.id).select("-password -__v -updatedAt");;
-    if (!staff) return res.status(404).json({ message: "Staff not found" });
-    res.status(200).json(staff);
+    const staff = await Staff.findById(req.params.id);
+    if (!staff) return responseHandler(res, 404, false, "Staff not found");
+
+    responseHandler(res, 200, true, "Staff retrieved successfully", staff);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching staff, " + error.message });
+    responseHandler(res, 500, false, "Error fetching staff", null, error.message);
   }
 };
 
@@ -31,14 +33,12 @@ exports.addStaff = async (req, res) => {
     const { name, role, contact, password } = req.body;
 
     if (!name || !role || !contact || !contact.email || !contact.phoneNumber) {
-      return res.status(400).json({
-        message: "Missing required fields: name, role, contact, email, and phone number are mandatory.",
-      });
+      return responseHandler(res, 400, false, "Missing required fields: name, role, email, and phone number are mandatory.");
     }
 
     const existingStaff = await Staff.findOne({ "contact.email": contact.email });
     if (existingStaff) {
-      return res.status(400).json({ message: "Email is already in use by another staff member." });
+      return responseHandler(res, 400, false, "Email is already in use by another staff member.");
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -53,13 +53,10 @@ exports.addStaff = async (req, res) => {
     await newStaff.save();
 
     const StaffData = newStaff.toObject();
-    delete StaffData.password;
-    delete StaffData.__v;
-    delete StaffData.updatedAt;
 
-    res.status(201).json({ message: "Staff added successfully", staff: StaffData });
+    responseHandler(res, 201, true, "Staff added successfully", StaffData);
   } catch (error) {
-    res.status(500).json({ message: `Error adding staff: ${error.message}` });
+    responseHandler(res, 500, false, "Error adding staff", null, error.message);
   }
 };
 
@@ -74,14 +71,12 @@ exports.updateStaff = async (req, res) => {
     }
   });
 
-  console.log(req.user.role);
-
   if ("role" in updateData && !["Admin", "SuperAdmin"].includes(req.user.role)) {
-    return res.status(403).json({ message: "Only admins can update the role." });
+    return responseHandler(res, 403, false, "Only admins can update the role.");
   }
 
   if (Object.keys(updateData).length === 0) {
-    return res.status(400).json({ message: "No valid fields to update" });
+    return responseHandler(res, 400, false, "No valid fields to update");
   }
 
   try {
@@ -91,11 +86,11 @@ exports.updateStaff = async (req, res) => {
       { new: true, runValidators: true }
     ).select("-password -__v -updatedAt");
 
-    if (!updatedStaff) return res.status(404).json({ message: "Staff not found" });
+    if (!updatedStaff) return responseHandler(res, 404, false, "Staff not found");
 
-    res.status(200).json({ message: "Staff updated successfully", staff: updatedStaff });
+    responseHandler(res, 200, true, "Staff updated successfully", updatedStaff);
   } catch (error) {
-    res.status(500).json({ message: `Error updating staff: ${error.message}` });
+    responseHandler(res, 500, false, "Error updating staff", null, error.message);
   }
 };
 
@@ -105,7 +100,12 @@ exports.updatePayroll = async (req, res) => {
     const { salary, bonus, deductions, payDate } = req.body;
 
     if (!staffId) {
-      return res.status(400).json({ message: "Staff ID is required." });
+      return responseHandler(res, 400, false, "Staff ID is required.");
+    }
+
+    const staff = await Staff.findById(staffId);
+    if (!staff) {
+      return responseHandler(res, 404, false, "Staff not found.");
     }
 
     if (staff.payroll?.payDate) {
@@ -116,7 +116,7 @@ exports.updatePayroll = async (req, res) => {
         lastPayDate.getFullYear() === currentDate.getFullYear() &&
         lastPayDate.getMonth() === currentDate.getMonth()
       ) {
-        return res.status(400).json({ message: "Staff has already been paid for this month." });
+        return responseHandler(res, 400, false, "Staff has already been paid for this month.");
       }
     }
 
@@ -138,13 +138,10 @@ exports.updatePayroll = async (req, res) => {
     }
 
     const StaffData = updatedStaff.toObject();
-    delete StaffData.password;
-    delete StaffData.__v;
-    delete StaffData.updatedAt;
 
-    res.status(200).json({ message: "Payroll updated successfully", staff: StaffData });
+    responseHandler(res, 200, true, "Payroll updated successfully", StaffData);
   } catch (error) {
-    res.status(500).json({ message: `Error updating payroll: ${error.message}` });
+    responseHandler(res, 500, false, "Error updating payroll", null, error.message);
   }
 };
 
@@ -152,9 +149,9 @@ exports.updatePayroll = async (req, res) => {
 exports.deleteStaff = async (req, res) => {
   try {
     const deletedStaff = await Staff.findByIdAndDelete(req.params.id);
-    if (!deletedStaff) return res.status(404).json({ message: "Staff not found" });
-    res.status(200).json({ message: "Staff deleted successfully" });
+    if (!deletedStaff) return responseHandler(res, 404, false, "Staff not found");
+    responseHandler(res, 200, true, "Staff deleted successfully");
   } catch (error) {
-    res.status(500).json({ message: "Error deleting staff " + error.message });
+    responseHandler(res, 500, false, "Error deleting staff", null, error.message);
   }
 };

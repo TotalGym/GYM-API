@@ -13,7 +13,7 @@ const createEquipmentValidation = {
       .url("Image must be a valid URL")
       .required("Image is required"),
     status: yup.string()
-      .oneOf(["Available", "In Use", "Under Maintenance"], "Invalid status")
+      .oneOf(["Available", "Under Maintenance"], "Invalid status")
       .required("Status is required"),
   }),
 };
@@ -24,7 +24,7 @@ const updateEquipmentValidation = {
     type: yup.string(),
     quantity: yup.number().min(1, "Quantity must be at least 1"),
     image: yup.string().url("Image must be a valid URL"),
-    status: yup.string().oneOf(["Available", "In Use", "Under Maintenance"], "Invalid status"),
+    status: yup.string().oneOf(["Available", "Under Maintenance"], "Invalid status"),
   }),
   params: yup.object({
     id: yup.string().required("Equipment ID is required"),
