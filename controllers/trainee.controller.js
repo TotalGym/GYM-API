@@ -197,7 +197,10 @@ exports.updateTrainee = async (req, res) => {
         return res.status(403).json({ message: "You are not authorized to update trainee data." });
       }
   
-      const allowedFields = ["paymentVerification", "name", "contact", "subscriptionType"];
+      const allowedFields = 
+      ["paymentVerification", "name", 
+        "contact", "subscriptionType", 
+        "selectedPrograms", "assignedCoach", "membership"];
   
       const updates = {};
       Object.keys(req.body).forEach((key) => {
