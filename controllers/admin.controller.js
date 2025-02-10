@@ -58,7 +58,7 @@ exports.createAdmin = async (req, res) => {
     }
   
     try {
-      const admin = await Admin.findByIdAndUpdate(id, updates, { new: true }).select("-__v -password -updatedAt");
+      const admin = await Admin.findByIdAndUpdate(id, updates, { new: true, runValidators: true }).select("-__v -password -updatedAt");
       if (!admin) return res.status(404).json({ message: "Admin not found" });
   
       res.status(200).json({ message: "Admin updated successfully", admin });

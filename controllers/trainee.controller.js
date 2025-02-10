@@ -219,7 +219,7 @@ exports.updateTrainee = async (req, res) => {
         return res.status(400).json({ message: "No valid fields to update or no updates provided." });
       }
   
-      const trainee = await Trainee.findByIdAndUpdate(req.params.id, updates, { new: true });
+      const trainee = await Trainee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
       if (!trainee) {
         return res.status(404).json({ message: "Trainee not found" });
       }

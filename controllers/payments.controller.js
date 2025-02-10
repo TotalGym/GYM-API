@@ -55,7 +55,7 @@ exports.getPaymentById = async (req, res) => {
 
 exports.updatePayment = async (req, res) => {
   try {
-    const updatedPayment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedPayment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!updatedPayment) return res.status(404).json({ message: "Payment not found" });
 
     res.status(202).json(updatedPayment);

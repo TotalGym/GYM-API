@@ -3,8 +3,8 @@ const { paginatedResults } = require('../utils/pagination.js');
 const { search } = require('../utils/search.js');
 
 const createProgram = async (req, res) => {
-    const {programName, exercises, description, image, schedule, monthlyPrice } = req.body;
-    const program = new Program({programName, exercises, description, image, schedule, monthlyPrice });
+    const {programName, exercises, description, image, schedule, monthlyPrice, annuallyPrice } = req.body;
+    const program = new Program({programName, exercises, description, image, schedule, monthlyPrice, annuallyPrice });
     try {
         const savedProgram = await program.save();
         res.status(201).json(savedProgram);
@@ -56,9 +56,9 @@ const getProgramByName = async (req, res) => {
 const updateProgram = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedProgram = await Program.findByIdAndUpdate(id, req.body, { new: true });
+        const updatedProgram = await Program.findByIdAndUpdate(id, req.body, { new: true, runValidators: true } );
         if(!updateProgram) return res.status(404).json({message: 'Program not found'})
-        res.status(202).json(updatedProgram);
+        res.status(202).json({ message:"Program Updated Successfully", updatedProgram});
     } catch (error) {
         res.status(500).json({message: error.message});
     }

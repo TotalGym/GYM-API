@@ -56,7 +56,7 @@ exports.createEquipment = async (req, res) => {
 
 exports.updateEquipment = async (req, res) => {
   try {
-    const updatedEquipment = await Equipment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedEquipment = await Equipment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!updatedEquipment) return res.status(404).json({ message: 'Equipment not found' });
     res.status(202).json(updatedEquipment);
   } catch (error) {

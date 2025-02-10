@@ -48,7 +48,7 @@ const getProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try{
         const { id } = req.params;
-        const updatedProduct = await Store.findByIdAndUpdate(id, req.body, { new: true }).select("-__v -updatedAt");
+        const updatedProduct = await Store.findByIdAndUpdate(id, req.body, { new: true, runValidators: true }).select("-__v -updatedAt");
         if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
         res.status(200).json(updatedProduct);
     }catch (error){
