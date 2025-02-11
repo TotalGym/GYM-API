@@ -13,6 +13,7 @@ require("dotenv").config();
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  const isDashboard = req.baseUrl.startsWith("/api/dashboard");
 
   try {
     const models = [
@@ -38,6 +39,10 @@ exports.login = async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password.trim(), user.password);
     
     if (!isPasswordCorrect) return responseHandler(res, 400, false, "Invalid credentials");
+
+    if (isDashboard && userRole === "Trainee") {
+      return responseHandler(res, 403, false, "Access Denied");
+    }
 
     const { token } = generateToken(user);
   
