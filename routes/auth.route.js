@@ -16,4 +16,8 @@ router.put("/reset-password", validation(resetPasswordValidation), resetPassword
 router.get("/user", authenticate, getLoggedUser);
 router.get("/check-auth", authenticate, checkAuth);
 
+router.use("*", (req, res) => {
+    res.status(404).json({ message: "Page Not Found" });
+});
+
 module.exports = router;

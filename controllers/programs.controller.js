@@ -1,4 +1,5 @@
 const Program = require('../models/programs.model.js');
+const Trainee = require('../models/trainee.model.js');
 const { paginatedResults } = require('../utils/pagination.js');
 const { responseHandler } = require('../utils/responseHandler.js');
 const { search } = require('../utils/search.js');
@@ -70,16 +71,16 @@ const updateProgram = async (req, res) => {
 
 const deleteProgram = async (req, res) => {
     const { id } = req.params;
+
     try {
-        const deletedProgram = await Program.findByIdAndDelete(id);
-        if (!deletedProgram) return responseHandler(res, 404, false, "Program not found");
+        const program = await Program.findById(id);
+        if (!program) return responseHandler(res, 404, false, "Program not found");
 
-        await Trainee.updateMany(
-            { selectedPrograms: id },
-            { $pull: { selectedPrograms: id } }
-        );
+        await Trainee.deleteMany({ selectedPrograms: id });
 
-        responseHandler(res, 200, true, "Program deleted successfully");
+        await Program.findByIdAndDelete(id);
+
+        responseHandler(res, 200, true, "Program and associated trainees deleted successfully");
     } catch (error) {
         responseHandler(res, 500, false, "Failed to delete program", null, error.message);
     }
