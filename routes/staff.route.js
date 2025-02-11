@@ -15,8 +15,8 @@ router.put("/:id",
     staffController.updateStaff
 );
 
-router.put("/:id", 
-    authorizeRole(["SuperAdmin", "Admin", "Coach",  "EquipmentManager" , "SalesManager"]),
+router.put("/update-payroll/:id", 
+    authorizeRole(["SuperAdmin", "Admin"]),
     validation(updatePayrollValidation),
     staffController.updatePayroll
 );

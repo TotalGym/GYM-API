@@ -16,7 +16,7 @@ exports.createStaffValidation = {
     }),
     password: yup.string().min(6, "Password must be at least 6 characters"),
     payroll: yup.object({
-      salary: yup.number().min(3).max(5),
+      salary: yup.number().optional().default(0),
       bonus: yup.number().default(0),
       deductions: yup.number().default(0),
       payDate: yup.date().optional(),
