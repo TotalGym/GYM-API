@@ -7,6 +7,7 @@ const Trainee = require("../../models/trainee.model.js");
 const Staff = require("../../models/staff.model.js");
 const Admin = require("../../models/admin.model.js");
 const generateToken = require("../../utils/generateToken.js");
+const {responseHandler} = require("../../utils/responseHandler.js");
 
 require("dotenv").config();
 
@@ -32,11 +33,11 @@ exports.login = async (req, res) => {
       }
     }
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return responseHandler(res, 400, false, "Invalid credentials");
 
     const isPasswordCorrect = await bcrypt.compare(password.trim(), user.password);
     
-    if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isPasswordCorrect) return responseHandler(res, 400, false, "Invalid credentials");
 
     const { token } = generateToken(user);
   
@@ -47,9 +48,9 @@ exports.login = async (req, res) => {
       id: user._id
     }
 
-    res.status(200).json({ message: "Logged In Successfully", token, userData });
+    responseHandler(res, 200, true, "Logged In Successfully", {token, userData});
   } catch (error) {
-    res.status(500).json({ message: "Error: " +  error.message });
+    responseHandler(res, 500, false, "Something went wrong", null, error.message)
   }
 };
 
@@ -59,7 +60,7 @@ exports.changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   if (req.user.id !== id) {
-    return res.status(403).json({ message: "You are not allowed to change this password" });
+    return responseHandler(res, 403, false, "You are not allowed to change this password");
   }
 
   try {
@@ -81,18 +82,18 @@ exports.changePassword = async (req, res) => {
       }
     }
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return responseHandler(res, 404, "User not found");
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Old password is incorrect" });
+    if (!isMatch) return responseHandler(res, 400, false, "Old password is incorrect");
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
-    res.status(200).json({ message: "Password updated successfully"});
+    responseHandler(res, 200, true, "Password updated successfully");
   } catch (error) {
-    res.status(500).json({ message: "Error updating password - " + error.message });
+    responseHandler(res, 500, false, "Error updating password..", null,  error.message);
   }
 };
 
@@ -100,9 +101,8 @@ exports.changePassword = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
+  if (!email) return responseHandler(res, 400, false, "Email is required");
+
 
   try {
     const models = [
@@ -118,9 +118,8 @@ exports.forgotPassword = async (req, res) => {
       if (user) break;
     }
 
-    if (!user) {
-      return res.status(404).json({ message: "No user found with this email" });
-    }
+    if (!user) return responseHandler(res, 404, false, "No user found with this email");
+
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOtp = await bcrypt.hash(otp, 10);
@@ -141,9 +140,9 @@ exports.forgotPassword = async (req, res) => {
       res.status(500).json({message: "Error sending the email"})
     }
 
-    res.status(200).json({ message: "OTP sent to your email" });
+    responseHandler(res, 200, true, "OTP sent to your email");
   } catch (error) {
-    res.status(500).json({ message: "Error sending OTP - " + error.message });
+    responseHandler(res, 500, false, "Error sending OTP", null, error.message);
   }
 };
 
@@ -151,9 +150,8 @@ exports.forgotPassword = async (req, res) => {
 exports.verifyResetCode = async (req, res) => {
   const { email, otp } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({ message: "Email and OTP are required" });
-  }
+  if (!email || !otp) return responseHandler(res, 400, false, "Email and OTP are required");
+
 
   try {
     const models = [
@@ -169,29 +167,24 @@ exports.verifyResetCode = async (req, res) => {
       if (user) break;
     }
 
-    if (!user) {
-      return res.status(404).json({ message: "No user found with this email" });
-    }
+    if (!user) return responseHandler(res, 404, false, "No user found with this email");
+    if (!user.passwordResetCode || !user.passwordResetExpires || Date.now() > user.passwordResetExpires) return responseHandler(res, 400, false, "Invalid or expired OTP");
 
-    if (!user.passwordResetCode || !user.passwordResetExpires) {
-      return res.status(400).json({ message: "No OTP request found" });
-    }
 
     if (Date.now() > user.passwordResetExpires) {
-      return res.status(400).json({ message: "OTP has expired" });
+      return responseHandler(res, 400, false, "OTP has expired");
     }
 
     const isOtpValid = await bcrypt.compare(otp, user.passwordResetCode);
-    if (!isOtpValid) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
+    if (!isOtpValid) return responseHandler(res, 400, false, "Invalid OTP");
+
 
     user.passwordResetVerified = true;
     await user.save();
 
-    res.status(200).json({ message: "Code verified" });
+    responseHandler(res, 200, true, "Code verified");
   } catch (error) {
-    res.status(500).json({ message: "Error verifying code - " + error.message });
+    responseHandler(res, 500, false, "Error verifying code", null, error.message);
   }
 };
 
@@ -200,9 +193,8 @@ exports.verifyResetCode = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 
-  if (!email || !newPassword) {
-    return res.status(400).json({ message: "Email and new password are required" });
-  }
+  if (!email || !newPassword) return responseHandler(res, 400, false, "Email and new password are required");
+
 
   try {
     const models = [
@@ -218,9 +210,8 @@ exports.resetPassword = async (req, res) => {
       if (user) break;
     }
 
-    if (!user) {
-      return res.status(404).json({ message: "No user found with this email" });
-    }
+    if (!user || !user.passwordResetVerified) return responseHandler(res, 400, false, "OTP has not been verified");
+
 
     if (!user.passwordResetVerified) {
       return res.status(400).json({ message: "OTP has not been verified" });
@@ -235,9 +226,9 @@ exports.resetPassword = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "Password reset successfully" });
+    responseHandler(res, 200, true, "Password reset successfully");
   } catch (error) {
-    res.status(500).json({ message: "Error resetting password - " + error.message });
+    responseHandler(res, 500, false, "Error resetting password", null, error.message);
   }
 };
 
@@ -251,19 +242,19 @@ exports.getLoggedUser = (req, res) => {
       role : user.role,
       id: user._id
     }
-    
-    res.json({ userData });
+   
+    responseHandler(res, 200, true, "Retrieve User Successfully", userData);
   } catch (error) {
-      res.json({error: error.message});
+    responseHandler(res, 500, "Error getting user data", null, error.message);
   }
 };
 
 
 exports.checkAuth = (req, res) => {
   try {
-      res.json({ authenticated: true });
+    responseHandler(res, 200, true, "Authenticated", { authenticated: true });
   } catch (error) {
-      res.json({ authenticated: false ,error: error.message });
+    responseHandler(res, 500, false, "Authentication check failed", null, error.message);
   }
 };
 
@@ -274,22 +265,22 @@ exports.deleteUser = async (req, res) => {
     const { confirmDelete } = req.body;
 
     if (req.user.role !== "SuperAdmin") {
-      return res.status(403).json({ message: "Only SuperAdmins can delete users." });
+      return responseHandler(res, 403, false, "Only SuperAdmins can delete users.");
     }
 
     const user = await Staff.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return responseHandler(res, 404, false, "User not found.");
     }
 
     if (!confirmDelete || confirmDelete !== "CONFIRM") {
-      return res.status(400).json({ message: "Deletion not confirmed. Send { confirmDelete: 'CONFIRM' } in request body." });
+      return responseHandler(res, 400, false, "Deletion not confirmed. Send { confirmDelete: 'CONFIRM' } in request body.");
     }
 
     await Staff.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "User deleted successfully." });
+    responseHandler(res, 200, true, "User deleted successfully.");
   } catch (error) {
-    res.status(500).json({ message: `Error deleting user: ${error.message}` });
+    responseHandler(res, 500, false, `Error deleting user: ${error.message}`);
   }
 };

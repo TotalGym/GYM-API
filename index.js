@@ -4,9 +4,9 @@ const dotenv = require("dotenv");
 const cors = require('cors');
 
 const errorHandler = require("./middlewares/error.middleware.js");
-const routes = require('./utils/split-routes/routes.js');
-const { authenticate } = require('./middlewares/authenticate.js');
-const authorizeRole = require('./middlewares/authorize.middleware.js');
+
+const dashboardRoutes = require('./utils/split-routes/dashboard.routes.js');
+const appRoutes = require('./utils/split-routes/app.routes.js');
 
 
 dotenv.config();
@@ -44,20 +44,8 @@ app.get('/', (req, res)=> {
 res.send("Welcome to GYM API!")
 });
 
-app.use('/api/auth', routes.authRoutes);
-
-app.use(authenticate);
-
-app.use('/api/equipment', routes.equipmentRoutes);
-app.use('/api/store', routes.storeRoutes);
-app.use('/api/sales', authorizeRole(["SuperAdmin", "Admin", "SalesManager"]), routes.salesHistoryRoutes);
-app.use('/api/programs', routes.programsRoutes);
-app.use('/api/trainee', routes.traineeRoutes);
-app.use('/api/staff', routes.staffRoutes)
-app.use("/api/payments", routes.paymentRoutes);
-app.use('/api/report', routes.reportRoutes);
-app.use('/api/notification', routes.notificationRoutes);
-app.use('/api/admin', authorizeRole(["SuperAdmin"]), routes.adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/app", appRoutes);
 
 
 app.use(errorHandler);
