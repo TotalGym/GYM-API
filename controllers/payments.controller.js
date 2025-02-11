@@ -11,17 +11,20 @@ exports.createPayment = async (req, res) => {
 
     const trainee = await Trainee.findById(TraineeID);
     if (!trainee) return responseHandler(res, 404, false, "Trainee not found");
-    
-    let PaymentDate = new Date();
-    let DueDate= trainee.membership.endDate;
-    
+
+    const PaymentDate = new Date();
+    const DueDate = trainee.membership?.endDate || PaymentDate;
+
     const payment = new Payment({ TraineeID, Amount, Status, DueDate, PaymentDate });
     const savedPayment = await payment.save();
 
-    const currentEndDate = new Date(trainee.membership.endDate);
-    const updatedEndDate = new Date(currentEndDate.setDate(currentEndDate.getDate() + 30));
-    trainee.membership.endDate = updatedEndDate.toISOString();
+    const currentEndDate = trainee.membership?.endDate 
+      ? new Date(trainee.membership.endDate) 
+      : new Date();
 
+    const updatedEndDate = new Date(currentEndDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    trainee.membership.endDate = updatedEndDate.toISOString();
     await trainee.save();
 
     responseHandler(res, 201, true, "Payment created successfully", savedPayment);
@@ -29,6 +32,7 @@ exports.createPayment = async (req, res) => {
     responseHandler(res, 500, false, "Failed to create payment", null, error.message);
   }
 };
+
 
 exports.getAllPayments = async (req, res) => {
   try{

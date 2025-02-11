@@ -96,14 +96,14 @@ exports.updateStaff = async (req, res) => {
 
 exports.updatePayroll = async (req, res) => {
   try {
-    const { staffId } = req.params;
+    const { id } = req.params;
     const { salary, bonus, deductions, payDate } = req.body;
 
-    if (!staffId) {
+    if (!id) {
       return responseHandler(res, 400, false, "Staff ID is required.");
     }
 
-    const staff = await Staff.findById(staffId);
+    const staff = await Staff.findById(id);
     if (!staff) {
       return responseHandler(res, 404, false, "Staff not found.");
     }
@@ -121,7 +121,7 @@ exports.updatePayroll = async (req, res) => {
     }
 
     const updatedStaff = await Staff.findByIdAndUpdate(
-      staffId,
+      id,
       {
         payroll: {
           salary: salary || 0,

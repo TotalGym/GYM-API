@@ -7,7 +7,7 @@ exports.createNotification = async (req, res) => {
   try {
     const { UserID, UserType, Type, Content, Date } = req.body;
     const notification = new Notification({ UserID, UserType, Type, Content, Date });
-    await notification.save();
+    const savedNotification = await notification.save();
     responseHandler(res, 201, true, "Notification created successfully", savedNotification);
   } catch (err) {
     responseHandler(res, 500, false, "Failed to create notification", null, err.message);

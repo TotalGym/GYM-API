@@ -70,8 +70,8 @@ exports.updateEquipment = async (req, res) => {
 exports.deleteEquipment = async (req, res) => {
   try {
     const deletedEquipment = await Equipment.findByIdAndDelete(req.params.id);
-    const { name } = deletedEquipment;
     if (!deletedEquipment) return responseHandler(res, 404, false, "Equipment not found");
+    const { name } = deletedEquipment;
     responseHandler(res, 200, true, `${name} deleted successfully`);
   } catch (error) {
     responseHandler(res, 500, false, "Failed to delete equipment", null, error.message);

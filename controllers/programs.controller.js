@@ -74,6 +74,11 @@ const deleteProgram = async (req, res) => {
         const deletedProgram = await Program.findByIdAndDelete(id);
         if (!deletedProgram) return responseHandler(res, 404, false, "Program not found");
 
+        await Trainee.updateMany(
+            { selectedPrograms: id },
+            { $pull: { selectedPrograms: id } }
+        );
+
         responseHandler(res, 200, true, "Program deleted successfully");
     } catch (error) {
         responseHandler(res, 500, false, "Failed to delete program", null, error.message);
