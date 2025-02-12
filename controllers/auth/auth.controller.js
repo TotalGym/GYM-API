@@ -14,7 +14,6 @@ require("dotenv").config();
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   const isDashboard = req.baseUrl.startsWith("/api/dashboard");
-  const isApp = req.baseUrl.startsWith("/api/app");
 
 
   try {
@@ -44,10 +43,6 @@ exports.login = async (req, res) => {
 
     if (isDashboard && userRole === "Trainee") {
       return responseHandler(res, 403, false, "Access Denied");
-    }
-
-    if (isApp && userRole === "SuperAdmin" || "Admin") {
-      return responseHandler(res, 403, false, "No need for admin to log into application");
     }
 
     const { token } = generateToken(user);
