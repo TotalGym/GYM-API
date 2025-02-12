@@ -17,7 +17,6 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 | PUT     | `/dashboard/auth/reset-password`           | Reset password                                 |
 | GET     | `/dashboard/auth/user`                     | Get authenticated user details                 |
 | GET     | `/dashboard/auth/check-auth`               | Check authentication status                    |
-| POST    | `/dashboard/auth/refresh`                  | Refresh authentication token                   |
 
 ## Equipment
 | Methods | Urls                           | Description                                    |
@@ -120,6 +119,17 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 | PUT     | `/dashboard/profile`             | Update user profile                            |
 
 # App Endpoints
+
+## Auth
+| Methods | Urls                                      | Description                                    |
+| ------- | ----------------------------------------- | ---------------------------------------------- |
+| POST    | `/app/auth/login`                    | Login a user                                   |
+| PUT     | `/app/auth/changePassword/:id`       | Change password by user ID                     |
+| POST    | `/app/auth/forgot-password`           | Request password reset                         |
+| POST    | `/app/auth/verify`                   | Verify reset code                              |
+| PUT     | `/app/auth/reset-password`           | Reset password                                 |
+| GET     | `/app/auth/user`                     | Get authenticated user details                 |
+| GET     | `/app/auth/check-auth`               | Check authentication status                    |
 
 ## Home
 | Methods | Urls                           | Description                                    |
