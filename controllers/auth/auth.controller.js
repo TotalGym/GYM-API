@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const sendEmail = require("../../utils/sendEmail.js");
 
