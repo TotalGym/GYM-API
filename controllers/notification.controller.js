@@ -63,3 +63,17 @@ exports.deleteNotification = async (req, res) => {
     responseHandler(res, 500, false, "Error deleting notification", null, err.message);
   }
 };
+
+exports.getTraineeNotifications = async (req, res) => {
+  try {
+      const traineeId = req.user.id;
+
+      const notifications = await Notification.find({ recipient: traineeId })
+          .sort({ createdAt: -1 })
+          .select("-__v");
+
+      responseHandler(res, 200, true, "Notifications retrieved successfully", notifications);
+  } catch (error) {
+      responseHandler(res, 500, false, "Error retrieving notifications", null, error.message);
+  }
+};

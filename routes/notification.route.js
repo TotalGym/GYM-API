@@ -18,6 +18,6 @@ router.post("/",
 
 router.get("/", authorizeRole(["SuperAdmin" , "Admin" , "Coach", "EquipmentManager" , "SalesManager"]), getAllNotifications);
 router.get("/:type", authorizeRole(["SuperAdmin" , "Admin" , "Coach", "EquipmentManager" , "SalesManager"]), getNotificationsByType);
-router.delete("/:id", authorizeRole(["SuperAdmin" , "Admin" , "Coach", "EquipmentManager" , "SalesManager"]), deleteNotification);
+router.delete("/:id", authorizeRole(["SuperAdmin" , "Admin"]), deleteNotification);
 
 module.exports = router;
