@@ -7,6 +7,18 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 
 # Dashboard Endpoints
 
+## Auth
+| Methods | Urls                                      | Description                                    |
+| ------- | ----------------------------------------- | ---------------------------------------------- |
+| POST    | `/dashboard/auth/login`                    | Login a user                                   |
+| PUT     | `/dashboard/auth/changePassword/:id`       | Change password by user ID                     |
+| POST    | `/dashboard/auth/forgot-password`           | Request password reset                         |
+| POST    | `/dashboard/auth/verify`                   | Verify reset code                              |
+| PUT     | `/dashboard/auth/reset-password`           | Reset password                                 |
+| GET     | `/dashboard/auth/user`                     | Get authenticated user details                 |
+| GET     | `/dashboard/auth/check-auth`               | Check authentication status                    |
+| POST    | `/dashboard/auth/refresh`                  | Refresh authentication token                   |
+
 ## Equipment
 | Methods | Urls                           | Description                                    |
 | ------- | ------------------------------- | ---------------------------------------------- |
@@ -53,18 +65,6 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 | POST    | `/dashboard/admin`               | Create a new admin                             |
 | PUT     | `/dashboard/admin/:id`           | Update an admin by ID                          |
 | DELETE  | `/dashboard/admin/:id`           | Delete an admin by ID                          |
-
-## Auth
-| Methods | Urls                                      | Description                                    |
-| ------- | ----------------------------------------- | ---------------------------------------------- |
-| POST    | `/dashboard/auth/login`                    | Login a user                                   |
-| PUT     | `/dashboard/auth/changePassword/:id`       | Change password by user ID                     |
-| POST    | `/dashboard/auth/forgot-password`           | Request password reset                         |
-| POST    | `/dashboard/auth/verify`                   | Verify reset code                              |
-| PUT     | `/dashboard/auth/reset-password`           | Reset password                                 |
-| GET     | `/dashboard/auth/user`                     | Get authenticated user details                 |
-| GET     | `/dashboard/auth/check-auth`               | Check authentication status                    |
-| POST    | `/dashboard/auth/refresh`                  | Refresh authentication token                   |
 
 ## Staff
 | Methods | Urls                                      | Description                                    |
