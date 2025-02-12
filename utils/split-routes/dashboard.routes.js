@@ -21,5 +21,10 @@ router.use("/store", authorizeRole(["SuperAdmin", "Admin", "SalesManager"]), rou
 router.use("/sales", authorizeRole(["SuperAdmin", "Admin", "SalesManager"]), routes.salesHistoryRoutes);
 router.use("/programs", authorizeRole(["SuperAdmin", "Admin", "Coach"]), routes.programsRoutes);
 router.use("/notification", authorizeRole(["SuperAdmin", "Admin"]), routes.notificationRoutes);
+router.use("/profile", routes.profileRoutes);
+
+router.use('*', (req, res)=> {
+    res.status(404).send("Page Not Found");
+});
 
 module.exports = router;

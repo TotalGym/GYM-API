@@ -11,6 +11,7 @@ const reportRoutes = require('../../routes/reports.route.js');
 const notificationRoutes = require('../../routes/notification.route.js');
 const dashboardHome =  require('../../routes/home/dashboard.route.js');
 const appHome =  require('../../routes/home/app.route.js');
+const profileRoutes = require('../../routes/profile.route.js');
 
 
 module.exports = {
@@ -26,5 +27,6 @@ module.exports = {
   reportRoutes,
   notificationRoutes,
   dashboardHome,
-  appHome
+  appHome,
+  profileRoutes,
 };
