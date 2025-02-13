@@ -7,7 +7,6 @@ const {search} = require("../utils/search.js");
 const { default: mongoose } = require("mongoose");
 const { responseHandler } = require("../utils/responseHandler.js");
 
-// Refactor create trainee to add program while creating using program name
 exports.createTrainee = async (req, res) => {
   try {
     const {
@@ -20,8 +19,9 @@ exports.createTrainee = async (req, res) => {
       selectedPrograms = [],
     } = req.body;
 
-    if (!name || !contact || !gender || !startDate || !subscriptionType || !contact.email || !contact.phoneNumber) {
-      return responseHandler(res, 400, false, "Missing required fields");
+    const validationError = validateInput({ name, contact, gender, startDate, subscriptionType });
+    if (validationError) {
+      return responseHandler(res, 400, false, validationError);
     }
 
     const existingTrainee = await Trainee.findOne({ "contact.email": contact.email });
@@ -29,20 +29,15 @@ exports.createTrainee = async (req, res) => {
       return responseHandler(res, 400, false, "Email is already in use by another trainee.");
     }
 
+
+    const programsError = await validateSelectedPrograms(selectedPrograms);
+    if (programsError) {
+      return responseHandler(res, 400, false, programsError);
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let endDate;
-    const start = new Date(startDate);
-
-    if (subscriptionType === "monthly") {
-      endDate = new Date(start);
-      endDate.setMonth(endDate.getMonth() + 1);
-    } else if (subscriptionType === "annually") {
-      endDate = new Date(start);
-      endDate.setFullYear(endDate.getFullYear() + 1);
-    } else {
-      return responseHandler(res, 400, false, "Invalid subscriptionType. Must be 'monthly' or 'annually'.");
-    }
+    const endDate = calculateEndDate(startDate, subscriptionType);
 
     const trainee = new Trainee({
       name,
@@ -54,7 +49,15 @@ exports.createTrainee = async (req, res) => {
       password: hashedPassword,
     });
 
+    if (selectedPrograms.length > 0) {
+      await Program.updateMany(
+        { _id: { $in: selectedPrograms } },
+        { $addToSet: { registeredTrainees: trainee._id } }
+      );
+    }
+
     await trainee.save();
+
     responseHandler(res, 201, true, "Trainee created successfully", trainee);  
   } catch (error) {
     responseHandler(res, 400, false,  `Error creating trainee: ${error.message}`, null ,error.message);
@@ -62,42 +65,7 @@ exports.createTrainee = async (req, res) => {
 };
 
 
-// refactor selecting program, to set an enrollment date for the trainee & update his startDate
-exports.selectProgram = async (req, res) => {
-  const { traineeId, programId } = req.params;
-
-  try {
-    if (!mongoose.Types.ObjectId.isValid(programId)) {
-      return responseHandler(res, 400, false, "Invalid program ID format");
-    }
-
-    const program = await Program.findById(programId);
-    if (!program) {
-      return responseHandler(res, 404, false, "Program not found");
-    }
-
-    const trainee = await Trainee.findById(traineeId);
-    if (!trainee) {
-      return responseHandler(res, 404, false, "Trainee not found");
-    }
-
-    trainee.selectedPrograms.push(programId);
-
-    await trainee.save();
-
-    if (trainee.selectedPrograms.includes(programId)) {
-      return responseHandler(res, 400, false, "Program already selected by this trainee");
-    }
-
-    program.registeredTrainees.push(traineeId);
-    await program.save();
-
-    responseHandler(res, 200, "Program selected successfully");
-  } catch (error) {
-    responseHandler(res, 500, "Error selecting program: ", null, error.message);
-  }
-};
-
+//todo: Add an enrollment date when changing for both add and change + make it one program!
 exports.changeProgram = async (req, res) => {
   const { traineeId, oldProgramId } = req.params;
   const { newProgramName } = req.body;
@@ -108,10 +76,22 @@ exports.changeProgram = async (req, res) => {
       return responseHandler(res, 404, false, "Trainee not found");
     }
 
-    const selectedProgram = trainee.selectedPrograms.find(
-      p => p.programId && p.programId.toString() === oldProgramId
-    );
 
+    if (!mongoose.Types.ObjectId.isValid(oldProgramId)) {
+      return responseHandler(res, 400, false, "Invalid program ID");
+    }
+    
+
+    const program = await Program.findById(oldProgramId);
+    if(!program) return responseHandler(res, 404, false, "Program not found")
+
+      
+      console.log(trainee.selectedPrograms);
+
+      const selectedProgram = trainee.selectedPrograms.find(
+        p => p.toString() === oldProgramId
+      );
+      
     if (!selectedProgram) {
       return responseHandler(res, 400, false, "Trainee is not enrolled in this program");
     }
@@ -126,19 +106,17 @@ exports.changeProgram = async (req, res) => {
       return responseHandler(res, 400, false, "Change period has expired (7 days from enrollment)");
     }
 
-    const newProgram = await Program.findOne({ programName: newProgramName });
+    const newProgram = await Program.findOne({
+      programName: { $regex: newProgramName, $options: 'i' }
+    });
+
     if (!newProgram) {
       return responseHandler(res, 404, false, "New program not found");
     }
+    
 
-    trainee.selectedPrograms = trainee.selectedPrograms.filter(
-      p => p.programId.toString() !== oldProgramId
-    );
+    trainee.selectedPrograms.push(newProgram._id);
 
-    trainee.selectedPrograms.push({
-      programId: newProgram._id,
-      enrollmentDate: currentDate,
-    });
     await trainee.save();
 
     const oldProgram = await Program.findById(oldProgramId);
@@ -157,9 +135,6 @@ exports.changeProgram = async (req, res) => {
     responseHandler(res, 500, false, "Error changing program...", null,  error.message);
   }
 };
-
-
-
 
 exports.getTrainees = async (req, res) => {
   try {
@@ -235,4 +210,53 @@ exports.deleteTrainee = async (req, res) => {
   } catch (error) {
     responseHandler(res, 500, false, "Error deleting trainee", null, error.message);
   }
+};
+
+
+const calculateEndDate = (startDate, subscriptionType) => {
+  const endDate = new Date(startDate);
+  if (subscriptionType === "monthly") {
+    endDate.setMonth(endDate.getMonth() + 1);
+  } else if (subscriptionType === "annually") {
+    endDate.setFullYear(endDate.getFullYear() + 1);
+  } else {
+    throw new Error("Invalid subscriptionType. Must be 'monthly' or 'annually'.");
+  }
+  return endDate;
+};
+
+const validateInput = ({ name, contact, gender, startDate, subscriptionType }) => {
+  if (!name || !contact || !gender || !startDate || !subscriptionType || !contact.email || !contact.phoneNumber) {
+    return "Missing required fields";
+  }
+  return null;
+};
+
+const validateSelectedPrograms = async (selectedPrograms) => {
+
+  if (!Array.isArray(selectedPrograms) || selectedPrograms.length === 0) {
+    return "selectedPrograms must be a non-empty array.";
+  }
+
+  const invalidProgramIds = selectedPrograms.filter(
+    (id) => !mongoose.Types.ObjectId.isValid(id)
+  );
+
+  if (invalidProgramIds.length > 0) {
+    return "One or more selected programs have invalid IDs.";
+  }
+
+  const programs = await Program.find({ _id: { $in: selectedPrograms } }).select('_id');
+
+  const existingProgramIds = programs.map((p) => p._id.toString());
+
+  const nonExistingPrograms = selectedPrograms.filter(
+    (id) => !existingProgramIds.includes(id.toString())
+  );
+
+  if (nonExistingPrograms.length > 0) {
+    return "One or more selected programs do not exist.";
+  }
+
+  return null;
 };

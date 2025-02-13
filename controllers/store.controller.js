@@ -5,13 +5,13 @@ const { search } = require('../utils/search.js');
 
 const addProduct = async (req, res) => {
     try{
-        const { productName, image, inventoryCount } = req.body;
+        const { productName, image, inventoryCount, description } = req.body;
 
         if (!productName || inventoryCount == null) {
             return responseHandler(res, 400, false, "Product name and inventory count are required.");
         }
 
-        const product = new Store({ productName, image, inventoryCount });
+        const product = new Store({ productName, image, inventoryCount, description });
         const savedProduct = await product.save();
         const productData = savedProduct.toObject();
 
