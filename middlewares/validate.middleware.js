@@ -1,12 +1,15 @@
+const { responseHandler } = require('../utils/responseHandler');
+
 const validation = (schema) => {
   return async (req, res, next) => {
-    const data = {
-      body: req.body,
-      params: req.params,
-      query: req.query,
-    };
-
     try {
+      const data = {
+        body: req.body,
+        params: req.params,
+        query: req.query,
+      };
+
+
       if (schema.body) {
         await schema.body.validate(data.body, { abortEarly: false });
       }
@@ -21,7 +24,10 @@ const validation = (schema) => {
 
       next();
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      if (error instanceof require('yup').ValidationError) {
+        return responseHandler(res, 400, false, "Validation failed", null, error.errors);
+      }
+      next(error); 
     }
   };
 };
