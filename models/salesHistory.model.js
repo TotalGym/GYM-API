@@ -29,13 +29,13 @@ const salesHistorySchema = new mongoose.Schema({
 
   price: {
     type: Number,
-    required: [true, "You must provide a price"],
     min: 0,
   },
 
   totalSaleValue: {
     type: Number,
     required: true,
+    min:0,
   },
 },
 {

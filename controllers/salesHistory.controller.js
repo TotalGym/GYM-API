@@ -5,32 +5,44 @@ const { responseHandler } = require('../utils/responseHandler.js');
 const { search } = require('../utils/search.js');
 
 exports.Sell = async (req, res) => {
-  const { ProductID, quantitySold, price } = req.body;
-
   try {
+    const { ProductID, TraineeID, quantitySold } = req.body;
+    if (!ProductID || !quantitySold || !TraineeID || isNaN(quantitySold) || quantitySold <= 0) {
+      return responseHandler(res, 400, false, "Invalid input or missing");
+    }
+
     const product = await Store.findById(ProductID);
     if (!product) {
-      if (!product) return responseHandler(res, 404, false, "Product not found");
+      return responseHandler(res, 404, false, "Product not found");
     }
+
     if (product.inventoryCount < quantitySold) {
       return responseHandler(res, 400, false, "Insufficient inventory");
     }
+
     product.inventoryCount -= quantitySold;
+    const totalSaleValue = quantitySold * product.price;
+    product.totalRevenue = (product.totalRevenue || 0) + totalSaleValue;
+
     await product.save();
 
-    let totalSaleValue = quantitySold * price;
-
-    const sale = new SalesHistory({
+    const sale = await SalesHistory.create({
       ProductID,
       quantitySold,
-      price,
-      totalSaleValue
+      totalSaleValue,
+      TraineeID
     });
-    await sale.save();
 
-    responseHandler(res, 201, true, "Sale recorded successfully", { sale, product });
+    const productData = {
+      name: product.productName,
+      quantity: product.inventoryCount,
+      totalRevenue: product.totalRevenue 
+    };
+
+    return responseHandler(res, 201, true, "Sale recorded successfully", { sale, productData });
+
   } catch (error) {
-    responseHandler(res, 500, false, "Failed to record sale", null, error.message);
+    return responseHandler(res, 500, false, "Failed to record sale", null, error.message);
   }
 };
 //todo: collect products being sold the most in each month for analytics
@@ -40,11 +52,17 @@ exports.getAllSales = async (req, res) => {
     const { searchTerm } = req.query;
     const searchQuery = search(SalesHistory, searchTerm);
 
+  
     const options = {
-      populateFields: [{ path: "ProductID", select: "ProductName" }]
+      populateFields: [
+        { path: "ProductID", select:"productName" },
+        { path: "TraineeID", select: "name email" }
+      ],
     };
 
     const paginatedData = await paginatedResults(SalesHistory, searchQuery, req, options);
+
+    // paginatedData.results = paginatedData.results.filter(sale => sale.ProductID);
 
     responseHandler(res, 200, true, "Sales history retrieved successfully", paginatedData);
   } catch (error) {

@@ -247,8 +247,10 @@ exports.getLoggedUser = (req, res) => {
       role : user.role,
       id: user._id
     }
-   
-    responseHandler(res, 200, true, "Retrieve User Successfully", userData);
+
+    const { token } = generateToken(user);   
+
+    responseHandler(res, 200, true, "Retrieve User Successfully", {token, userData});
   } catch (error) {
     responseHandler(res, 500, "Error getting user data", null, error.message);
   }
