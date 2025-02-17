@@ -116,7 +116,7 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 | Methods | Urls                           | Description                                    |
 | ------- | ------------------------------- | ---------------------------------------------- |
 | GET     | `/dashboard/profile`             | Get user profile                               |
-| PUT     | `/dashboard/profile`             | Update user profile                            |
+| PATCH     | `/dashboard/profile`             | Update user profile                            |
 
 # App Endpoints
 
@@ -140,7 +140,7 @@ The Gym API provides endpoints for managing gym-related functionalities includin
 | Methods | Urls                           | Description                                    |
 | ------- | ------------------------------- | ---------------------------------------------- |
 | GET     | `/app/profile`                   | Get user profile                               |
-| PUT     | `/app/profile`                   | Update user profile                            |
+| PATCH     | `/app/profile`                   | Update user profile                            |
 
 ## Trainees
 | Methods | Urls                           | Description                                    |
