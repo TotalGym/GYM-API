@@ -3,12 +3,12 @@ const router = express.Router();
 const routes = require("../../utils/split-routes/routes.js");
 const authorizeRole = require("../../middlewares/authorize.middleware.js");
 const { authenticate } = require("../../middlewares/authenticate.js");
-const restrictTrainees = require("../../middlewares/restrictTrainees.middleware.js");
+const restrict = require("../../middlewares/restrict.middleware.js");
  
 router.use("/auth", routes.authRoutes);
 
 router.use(authenticate);
-router.use(restrictTrainees);
+router.use(restrict);
 
 router.use("/home", routes.dashboardHome);
 router.use("/admin", authorizeRole(["SuperAdmin"]), routes.adminRoutes);
