@@ -5,8 +5,8 @@ const {
     getTraineeById, 
     updateTrainee, 
     deleteTrainee, 
-    selectProgram, 
-    changeProgram
+    changeProgram,
+    searchTrainees
 } = require("../controllers/trainee.controller.js");
 
 const authorizeRole = require("../middlewares/authorize.middleware.js");
@@ -16,6 +16,7 @@ const router = express.Router();
 router.post("/",authorizeRole(["Admin", "SuperAdmin", "Coach"]), createTrainee);
 
 router.get("/",  getTrainees);
+router.get("/search", searchTrainees);
 router.get("/:id", getTraineeById);
 
 router.put("/:id", authorizeRole(["Admin", "SuperAdmin"]), updateTrainee);

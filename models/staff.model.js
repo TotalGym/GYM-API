@@ -29,6 +29,7 @@ const staffSchema = new mongoose.Schema({
       status: { type: String, enum: ["Present", "Absent", "On Leave"], required: false }
     }
   ],
+  status: { type: String, enum: ["new", "active" , "inactive"], default:"new" },
   payroll: {
     salary: { type: Number, required: false },
     bonus: { type: Number, default: 0 },

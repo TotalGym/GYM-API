@@ -212,6 +212,25 @@ exports.deleteTrainee = async (req, res) => {
   }
 };
 
+exports.searchTrainees = async (req, res) => {
+  try {
+    const searchQuery = search(Trainee, req.query.search);
+    const trainees = await Trainee.find(searchQuery);
+
+    if (trainees.length === 0) {
+      return responseHandler(res, 404, false, "No trainees found", []);
+    }
+
+    const Data = trainees.map(trainee => ({
+      id: trainee._id,
+      name: trainee.name
+    }));
+
+    responseHandler(res, 200, true, "Trainees found successfully", Data);
+  } catch (error) {
+    responseHandler(res, 500, false, "Error searching trainees", null, error.message);
+  }
+};
 
 const calculateEndDate = (startDate, subscriptionType) => {
   const endDate = new Date(startDate);
