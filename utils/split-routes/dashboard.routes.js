@@ -4,7 +4,9 @@ const routes = require("../../utils/split-routes/routes.js");
 const authorizeRole = require("../../middlewares/authorize.middleware.js");
 const { authenticate } = require("../../middlewares/authenticate.js");
 const restrict = require("../../middlewares/restrict.middleware.js");
+const { handleCheckIn } = require("../../controllers/attendance.controller.js");
  
+router.post('/check-in',authenticate ,handleCheckIn);
 router.use("/auth", routes.authRoutes);
 
 router.use(authenticate);

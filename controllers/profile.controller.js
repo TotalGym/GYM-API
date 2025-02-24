@@ -8,16 +8,14 @@ exports.getProfile = async (req, res) => {
         const user = req.user;
 
         if(!user) return responseHandler(res, 404, false, "You are Not Found");
-
-        // if (user.role === "Admin" || user.role === "SuperAdmin") {
-        //     return responseHandler(res, 200, true, "Admin profile retrieved successfully", user);
-        // }
-
+        
         const userData = {
             name: user.name,
             email: user.contact?.email || user.email,
             contact: user.contact || {}, 
             role: user.role,
+            status: user.status,
+            attendance: user.attendance
         };
 
         return responseHandler(res, 200, true, "Profile retrieved successfully", userData);

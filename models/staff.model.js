@@ -26,7 +26,7 @@ const staffSchema = new mongoose.Schema({
   attendance: [
     {
       date: { type: Date, default: Date.now },
-      status: { type: String, enum: ["Present", "Absent", "On Leave"], required: false }
+      status: { type: String, enum: ["Present", "Absent"], required: false }
     }
   ],
   status: { type: String, enum: ["new", "active" , "inactive"], default:"new" },
