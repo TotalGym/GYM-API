@@ -50,7 +50,7 @@ try {
 
     if (checkInCount >= 4) {
         user.status = 'active';
-    } else if (recentAttendance.length === 0) {
+    } else if (recentAttendance.length >= 0 || recentAttendance.length <= 3) {
         user.status = 'new';
     } else {
         user.status = 'inactive';
