@@ -1,9 +1,10 @@
-const {paginatedResults} = require("../utils/pagination.js");
+const { paginatedResults } = require("../utils/pagination.js");
 const bcrypt = require("bcrypt");
 const Trainee = require("../models/trainee.model.js");
 const Program = require("../models/programs.model.js");
+const Staff = require("../models/staff.model.js");
 
-const {search} = require("../utils/search.js");
+const { search } = require("../utils/search.js");
 const { default: mongoose } = require("mongoose");
 const { responseHandler } = require("../utils/responseHandler.js");
 
@@ -16,19 +17,32 @@ exports.createTrainee = async (req, res) => {
       membership: { startDate } = {},
       subscriptionType,
       password,
+      assignedCoach,
       selectedPrograms = [],
     } = req.body;
 
-    const validationError = validateInput({ name, contact, gender, startDate, subscriptionType });
+    const validationError = validateInput({
+      name,
+      contact,
+      gender,
+      startDate,
+      subscriptionType,
+    });
     if (validationError) {
       return responseHandler(res, 400, false, validationError);
     }
 
-    const existingTrainee = await Trainee.findOne({ "contact.email": contact.email });
+    const existingTrainee = await Trainee.findOne({
+      "contact.email": contact.email,
+    });
     if (existingTrainee) {
-      return responseHandler(res, 400, false, "Email is already in use by another trainee.");
+      return responseHandler(
+        res,
+        400,
+        false,
+        "Email is already in use by another trainee."
+      );
     }
-
 
     const programsError = await validateSelectedPrograms(selectedPrograms);
     if (programsError) {
@@ -39,6 +53,11 @@ exports.createTrainee = async (req, res) => {
 
     const endDate = calculateEndDate(startDate, subscriptionType);
 
+    const coach = await Staff.findById(assignedCoach);
+
+    if (!coach)
+      return responseHandler(res, 404, false, null, "Coach not found");
+
     const trainee = new Trainee({
       name,
       contact,
@@ -47,6 +66,7 @@ exports.createTrainee = async (req, res) => {
       selectedPrograms,
       subscriptionType,
       password: hashedPassword,
+      assignedCoach: coach._id,
     });
 
     if (selectedPrograms.length > 0) {
@@ -58,12 +78,18 @@ exports.createTrainee = async (req, res) => {
 
     await trainee.save();
 
-    responseHandler(res, 201, true, "Trainee created successfully", trainee);  
+    responseHandler(res, 201, true, "Trainee created successfully", trainee);
   } catch (error) {
-    responseHandler(res, 400, false,  `Error creating trainee: ${error.message}`, null ,error.message);
+    responseHandler(
+      res,
+      400,
+      false,
+      `Error creating trainee: ${error.message}`,
+      null,
+      error.message
+    );
   }
 };
-
 
 //todo: Add an enrollment date when changing for both add and change + make it one program!
 exports.changeProgram = async (req, res) => {
@@ -76,24 +102,26 @@ exports.changeProgram = async (req, res) => {
       return responseHandler(res, 404, false, "Trainee not found");
     }
 
-
     if (!mongoose.Types.ObjectId.isValid(oldProgramId)) {
       return responseHandler(res, 400, false, "Invalid program ID");
     }
-    
 
     const program = await Program.findById(oldProgramId);
-    if(!program) return responseHandler(res, 404, false, "Program not found")
+    if (!program) return responseHandler(res, 404, false, "Program not found");
 
-      
-      console.log(trainee.selectedPrograms);
+    console.log(trainee.selectedPrograms);
 
-      const selectedProgram = trainee.selectedPrograms.find(
-        p => p.toString() === oldProgramId
-      );
-      
+    const selectedProgram = trainee.selectedPrograms.find(
+      (p) => p.toString() === oldProgramId
+    );
+
     if (!selectedProgram) {
-      return responseHandler(res, 400, false, "Trainee is not enrolled in this program");
+      return responseHandler(
+        res,
+        400,
+        false,
+        "Trainee is not enrolled in this program"
+      );
     }
 
     const enrollmentDate = new Date(selectedProgram.enrollmentDate);
@@ -103,17 +131,21 @@ exports.changeProgram = async (req, res) => {
     );
 
     if (daysSinceEnrollment > 7) {
-      return responseHandler(res, 400, false, "Change period has expired (7 days from enrollment)");
+      return responseHandler(
+        res,
+        400,
+        false,
+        "Change period has expired (7 days from enrollment)"
+      );
     }
 
     const newProgram = await Program.findOne({
-      programName: { $regex: newProgramName, $options: 'i' }
+      programName: { $regex: newProgramName, $options: "i" },
     });
 
     if (!newProgram) {
       return responseHandler(res, 404, false, "New program not found");
     }
-    
 
     trainee.selectedPrograms.push(newProgram._id);
 
@@ -122,7 +154,7 @@ exports.changeProgram = async (req, res) => {
     const oldProgram = await Program.findById(oldProgramId);
     if (oldProgram) {
       oldProgram.registeredTrainees = oldProgram.registeredTrainees.filter(
-        id => id.toString() !== traineeId
+        (id) => id.toString() !== traineeId
       );
       await oldProgram.save();
     }
@@ -132,7 +164,14 @@ exports.changeProgram = async (req, res) => {
 
     responseHandler(res, 200, true, "Program changed successfully");
   } catch (error) {
-    responseHandler(res, 500, false, "Error changing program...", null,  error.message);
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error changing program...",
+      null,
+      error.message
+    );
   }
 };
 
@@ -141,74 +180,120 @@ exports.getTrainees = async (req, res) => {
     const searchQuery = search(Trainee, req.query.search);
     const response = await paginatedResults(Trainee, searchQuery, req, {
       populateFields: [
-        { path: 'selectedPrograms', select: 'programName' },
+        { path: "selectedPrograms", select: "programName" },
+        { path: "assignedCoach", select: "name" },
       ],
     });
 
     responseHandler(res, 200, true, "Fetched Trainees Successfully", response);
   } catch (error) {
-    responseHandler(res, 500, false, "Error fetching trainees" , null, error.message);
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error fetching trainees",
+      null,
+      error.message
+    );
   }
 };
 
 exports.getTraineeById = async (req, res) => {
-    const {id} = req.params;
-    try {
-      const trainee = await Trainee.findById(id).populate({ path: "selectedPrograms", select: "programName" });
-      if(!trainee) return responseHandler(res, 404, "Trainee Not found");
+  const { id } = req.params;
+  try {
+    const trainee = await Trainee.findById(id).populate({
+      path: "selectedPrograms",
+      select: "programName",
+    });
+    if (!trainee) return responseHandler(res, 404, "Trainee Not found");
 
-      responseHandler(res, 200, true, "Trainee Fetched success", trainee);
-    } catch (error) {
-      responseHandler(res, 500, false, "Error fetching trainees", null, error.message);
-    }
-  };
-
+    responseHandler(res, 200, true, "Trainee Fetched success", trainee);
+  } catch (error) {
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error fetching trainees",
+      null,
+      error.message
+    );
+  }
+};
 
 exports.updateTrainee = async (req, res) => {
-  console.log("WTF is going on!!!")
-    try {
-      const userRole = req.user.role;
-      if (userRole !== "Admin" && userRole !== "SuperAdmin") {
-        return responseHandler(res, 403, false, "You are not authorized to update trainee data.");
-      }
-
-      console.log(userRole);
-  
-      const allowedFields = 
-      ["paymentVerification", "name", 
-        "contact", "subscriptionType", 
-        "selectedPrograms", "assignedCoach", "membership"];
-  
-      const updates = {};
-      Object.keys(req.body).forEach((key) => {
-        if (allowedFields.includes(key)) {
-          updates[key] = req.body[key];
-        }
-      });
-  
-      if (Object.keys(updates).length === 0) {
-        return responseHandler(res, 400, false, "No valid fields to update or no updates provided.");
-      }
-  
-      const trainee = await Trainee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
-      if (!trainee) {
-        return responseHandler(res, 404, false, "Trainee not found");
-      }
-  
-      responseHandler(res, 200, true, "Trainee updated successfully", trainee);
-    } catch (error) {
-      responseHandler(res, 500, false, "Error updating trainee: ", null, error.message);
+  try {
+    const userRole = req.user.role;
+    if (userRole !== "Admin" && userRole !== "SuperAdmin") {
+      return responseHandler(
+        res,
+        403,
+        false,
+        "You are not authorized to update trainee data."
+      );
     }
+
+    const allowedFields = [
+      "paymentVerification",
+      "name",
+      "contact",
+      "subscriptionType",
+      "selectedPrograms",
+      "assignedCoach",
+      "membership",
+    ];
+
+    const updates = {};
+    Object.keys(req.body).forEach((key) => {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return responseHandler(
+        res,
+        400,
+        false,
+        "No valid fields to update or no updates provided."
+      );
+    }
+
+    const trainee = await Trainee.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
+    });
+    if (!trainee) {
+      return responseHandler(res, 404, false, "Trainee not found");
+    }
+
+    responseHandler(res, 200, true, "Trainee updated successfully", trainee);
+  } catch (error) {
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error updating trainee: ",
+      null,
+      error.message
+    );
+  }
 };
-  
+
 exports.deleteTrainee = async (req, res) => {
   try {
     const trainee = await Trainee.findByIdAndDelete(req.params.id);
     if (!trainee) return responseHandler(res, 404, false, "Trainee not found");
 
-   responseHandler(res, 200, true, "Trainee deleted successfully");
+    responseHandler(res, 200, true, "Trainee deleted successfully");
   } catch (error) {
-    responseHandler(res, 500, false, "Error deleting trainee", null, error.message);
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error deleting trainee",
+      null,
+      error.message
+    );
   }
 };
 
@@ -221,14 +306,21 @@ exports.searchTrainees = async (req, res) => {
       return responseHandler(res, 404, false, "No trainees found", []);
     }
 
-    const Data = trainees.map(trainee => ({
+    const Data = trainees.map((trainee) => ({
       id: trainee._id,
-      name: trainee.name
+      name: trainee.name,
     }));
 
     responseHandler(res, 200, true, "Trainees found successfully", Data);
   } catch (error) {
-    responseHandler(res, 500, false, "Error searching trainees", null, error.message);
+    responseHandler(
+      res,
+      500,
+      false,
+      "Error searching trainees",
+      null,
+      error.message
+    );
   }
 };
 
@@ -239,20 +331,35 @@ const calculateEndDate = (startDate, subscriptionType) => {
   } else if (subscriptionType === "annually") {
     endDate.setFullYear(endDate.getFullYear() + 1);
   } else {
-    throw new Error("Invalid subscriptionType. Must be 'monthly' or 'annually'.");
+    throw new Error(
+      "Invalid subscriptionType. Must be 'monthly' or 'annually'."
+    );
   }
   return endDate;
 };
 
-const validateInput = ({ name, contact, gender, startDate, subscriptionType }) => {
-  if (!name || !contact || !gender || !startDate || !subscriptionType || !contact.email || !contact.phoneNumber) {
+const validateInput = ({
+  name,
+  contact,
+  gender,
+  startDate,
+  subscriptionType,
+}) => {
+  if (
+    !name ||
+    !contact ||
+    !gender ||
+    !startDate ||
+    !subscriptionType ||
+    !contact.email ||
+    !contact.phoneNumber
+  ) {
     return "Missing required fields";
   }
   return null;
 };
 
 const validateSelectedPrograms = async (selectedPrograms) => {
-
   if (!Array.isArray(selectedPrograms) || selectedPrograms.length === 0) {
     return "selectedPrograms must be a non-empty array.";
   }
@@ -265,7 +372,9 @@ const validateSelectedPrograms = async (selectedPrograms) => {
     return "One or more selected programs have invalid IDs.";
   }
 
-  const programs = await Program.find({ _id: { $in: selectedPrograms } }).select('_id');
+  const programs = await Program.find({
+    _id: { $in: selectedPrograms },
+  }).select("_id");
 
   const existingProgramIds = programs.map((p) => p._id.toString());
 
