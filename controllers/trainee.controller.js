@@ -14,7 +14,6 @@ exports.createTrainee = async (req, res) => {
       name,
       contact,
       gender,
-      membership: { startDate } = {},
       subscriptionType,
       password,
       assignedCoach,
@@ -25,7 +24,6 @@ exports.createTrainee = async (req, res) => {
       name,
       contact,
       gender,
-      startDate,
       subscriptionType,
     });
     if (validationError) {
@@ -51,12 +49,13 @@ exports.createTrainee = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const startDate = new Date();
     const endDate = calculateEndDate(startDate, subscriptionType);
 
     const coach = await Staff.findById(assignedCoach);
-
-    if (!coach)
+    if (!coach) {
       return responseHandler(res, 404, false, null, "Coach not found");
+    }
 
     const trainee = new Trainee({
       name,
@@ -338,18 +337,11 @@ const calculateEndDate = (startDate, subscriptionType) => {
   return endDate;
 };
 
-const validateInput = ({
-  name,
-  contact,
-  gender,
-  startDate,
-  subscriptionType,
-}) => {
+const validateInput = ({ name, contact, gender, subscriptionType }) => {
   if (
     !name ||
     !contact ||
     !gender ||
-    !startDate ||
     !subscriptionType ||
     !contact.email ||
     !contact.phoneNumber
