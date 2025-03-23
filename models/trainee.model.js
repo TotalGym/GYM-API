@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const ObjectId = mongoose.Schema.Types.ObjectId;
-
+// Add health status
 const traineeSchema = new mongoose.Schema(
   {
     name: {

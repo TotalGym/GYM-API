@@ -4,8 +4,7 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 const PaymentSchema = new mongoose.Schema(
   {
     TraineeID: { type: ObjectId, ref: "Trainee", required: true },
-    // ProgramID: { type: ObjectId, ref: "Program", required: true },
-    Amount: { type: Number, required: true },
+    ProgramID: { type: ObjectId, ref: "Program", required: true },
     Status: {
       type: String,
       enum: ["Paid", "Pending"],

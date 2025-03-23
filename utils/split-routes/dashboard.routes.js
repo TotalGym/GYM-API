@@ -50,11 +50,7 @@ router.use(
   authorizeRole(["SuperAdmin", "Admin", "Coach"]),
   routes.programsRoutes
 );
-router.use(
-  "/notification",
-  authorizeRole(["SuperAdmin", "Admin"]),
-  routes.notificationRoutes
-);
+router.use("/notification", routes.notificationRoutes);
 router.use("/profile", routes.profileRoutes);
 
 router.use("*", (req, res) => {
