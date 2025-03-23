@@ -31,6 +31,16 @@ exports.createPayment = async (req, res) => {
     if (!ProgramID)
       return responseHandler(res, 400, false, "ProgramID is required");
 
+    const program = await Program.findById(ProgramID);
+    if (!program) return responseHandler(res, 404, false, "Program not found");
+
+    let Amount;
+    if (trainee.subscriptionType === "annually") {
+      Amount = program.annuallyPrice;
+    } else {
+      Amount = program.monthlyPrice;
+    }
+
     const PaymentDate = currentDate;
     const DueDate = membershipEndDate;
 
@@ -38,13 +48,13 @@ exports.createPayment = async (req, res) => {
       TraineeID,
       ProgramID,
       Status: "Paid",
+      Amount,
       DueDate,
       PaymentDate,
     });
     const savedPayment = await payment.save();
 
     let updatedEndDate = new Date(membershipEndDate);
-
     if (trainee.subscriptionType === "annually") {
       updatedEndDate.setFullYear(updatedEndDate.getFullYear() + 1);
     } else {
