@@ -4,7 +4,7 @@ exports.createPaymentValidation = {
   body: yup.object({
     TraineeID: yup.string().required("TraineeID is required"),
     ProgramID: yup.string().required("TraineeID is required"),
-    Amount: yup.number().min("50").required("Amount is required"),
+    Amount: yup.number().min("50"),
     Status: yup
       .string()
       .oneOf(["Paid", "Pending"], "Invalid Status")
