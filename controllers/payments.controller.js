@@ -20,12 +20,27 @@ exports.createPayment = async (req, res) => {
       ? new Date(trainee.membership.endDate)
       : currentDate;
 
-    if (membershipEndDate > currentDate) {
+    if (
+      trainee.subscriptionType === "monthly" &&
+      currentDate < membershipEndDate
+    ) {
       return responseHandler(
         res,
         400,
         false,
-        "Payment not allowed before current membership expires"
+        "Payment already made for the current month"
+      );
+    }
+
+    if (
+      trainee.subscriptionType === "annually" &&
+      currentDate < membershipEndDate
+    ) {
+      return responseHandler(
+        res,
+        400,
+        false,
+        "Payment already made for the current year"
       );
     }
 
