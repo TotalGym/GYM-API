@@ -5,6 +5,7 @@ const PaymentSchema = new mongoose.Schema(
   {
     TraineeID: { type: ObjectId, ref: "Trainee", required: true },
     ProgramID: { type: ObjectId, ref: "Program", required: true },
+    Amount: { type: Number },
     Status: {
       type: String,
       enum: ["Paid", "Pending"],

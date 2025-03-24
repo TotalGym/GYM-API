@@ -15,47 +15,34 @@ exports.createPayment = async (req, res) => {
     const trainee = await Trainee.findById(TraineeID);
     if (!trainee) return responseHandler(res, 404, false, "Trainee not found");
 
-    const currentDate = new Date();
-    let membershipEndDate = trainee.membership?.endDate
-      ? new Date(trainee.membership.endDate)
-      : currentDate;
-
-    if (
-      trainee.subscriptionType === "monthly" &&
-      currentDate < membershipEndDate
-    ) {
-      return responseHandler(
-        res,
-        400,
-        false,
-        "Payment already made for the current month"
-      );
-    }
-
-    if (
-      trainee.subscriptionType === "annually" &&
-      currentDate < membershipEndDate
-    ) {
-      return responseHandler(
-        res,
-        400,
-        false,
-        "Payment already made for the current year"
-      );
-    }
-
     if (!ProgramID)
       return responseHandler(res, 400, false, "ProgramID is required");
 
     const program = await Program.findById(ProgramID);
     if (!program) return responseHandler(res, 404, false, "Program not found");
 
-    let Amount;
-    if (trainee.subscriptionType === "annually") {
-      Amount = program.annuallyPrice;
-    } else {
-      Amount = program.monthlyPrice;
+    const currentDate = new Date();
+    let membershipEndDate = trainee.membership?.endDate
+      ? new Date(trainee.membership.endDate)
+      : null;
+
+    if (!membershipEndDate || isNaN(membershipEndDate)) {
+      membershipEndDate = currentDate;
     }
+
+    if (trainee.paymentVerification && membershipEndDate > currentDate) {
+      return responseHandler(
+        res,
+        400,
+        false,
+        "Payment already verified and current subscription is still active"
+      );
+    }
+
+    const Amount =
+      trainee.subscriptionType === "annually"
+        ? program.annuallyPrice
+        : program.monthlyPrice;
 
     const PaymentDate = currentDate;
     const DueDate = membershipEndDate;
@@ -68,6 +55,7 @@ exports.createPayment = async (req, res) => {
       DueDate,
       PaymentDate,
     });
+
     const savedPayment = await payment.save();
 
     let updatedEndDate = new Date(membershipEndDate);
