@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const authorizeRole = require("../middlewares/authorize.middleware");
-const { 
+const {
   generateStoreReport,
   generateStaffReport,
-  generateTraineeReport, 
-  generateEquipmentReport, 
-  generateProgramsReport, 
-  generatePaymentsReport, 
+  generateTraineeReport,
+  generateEquipmentReport,
+  generateProgramsReport,
+  generatePaymentsReport,
+  deleteAllPaymentReports,
 } = require("../controllers/reports.controller");
 
 router.get(
@@ -23,28 +24,27 @@ router.get(
 );
 
 router.get(
-    "/staff-report",
-    authorizeRole(["Admin", "SuperAdmin"]),
-    generateStaffReport
+  "/staff-report",
+  authorizeRole(["Admin", "SuperAdmin"]),
+  generateStaffReport
 );
 
 router.get(
-    "/programs-report",
-    authorizeRole(["Admin", "SuperAdmin", "Coach"]),
-    generateProgramsReport
+  "/programs-report",
+  authorizeRole(["Admin", "SuperAdmin", "Coach"]),
+  generateProgramsReport
 );
 
 router.get(
-    "/payments-reports",
-    authorizeRole(["Admin", "SuperAdmin"]),
-    generatePaymentsReport
+  "/payments-reports",
+  authorizeRole(["Admin", "SuperAdmin"]),
+  generatePaymentsReport
 );
 
 router.get(
-    "/store-report",
-    authorizeRole(["Admin", "SuperAdmin", "SalesManager"]),
-    generateStoreReport
+  "/store-report",
+  authorizeRole(["Admin", "SuperAdmin", "SalesManager"]),
+  generateStoreReport
 );
-
 
 module.exports = router;

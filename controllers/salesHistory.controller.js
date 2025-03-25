@@ -171,9 +171,9 @@ exports.getFilteredSales = async (req, res) => {
       productName: sale.ProductID?.ProductName || null,
       traineeName: sale.TraineeID?.Name || null,
       traineeEmail: sale.TraineeID?.Contact?.Email || null,
-      quantitySold: sale.QuantitySold,
-      price: sale.Price,
-      totalSaleValue: sale.TotalSaleValue,
+      quantitySold: sale.quantitySold,
+      price: sale.price,
+      totalSaleValue: sale.totalSaleValue,
       saleDate: sale.SaleDate,
     }));
 

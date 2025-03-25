@@ -298,10 +298,17 @@ exports.deleteTrainee = async (req, res) => {
 
 exports.searchTrainees = async (req, res) => {
   try {
-    const searchQuery = search(Trainee, req.query.search);
-    const trainees = await Trainee.find(searchQuery);
+    let searchQuery = search(Trainee, req.query.search);
 
-    if (trainees.length === 0) {
+    if (req.query.search) {
+      searchQuery = {
+        name: { $regex: req.query.search, $options: "i" },
+      };
+    }
+
+    const trainees = await Trainee.find(searchQuery, "name");
+
+    if (!trainees.length) {
       return responseHandler(res, 404, false, "No trainees found", []);
     }
 

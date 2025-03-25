@@ -1,17 +1,27 @@
-const Payment = require('../models/payments.model');
-const Program = require('../models/programs.model');
-const Trainee = require('../models/trainee.model');
-const Equipment = require('../models/equipment.model.js');
-const Staff = require('../models/staff.model.js');
-const Store = require('../models/store.model.js');
-const { paginatedResults } = require('../utils/pagination');
-const { search } = require('../utils/search');
-const { responseHandler } = require('../utils/responseHandler');
+const Payment = require("../models/payments.model");
+const Program = require("../models/programs.model");
+const Trainee = require("../models/trainee.model");
+const Equipment = require("../models/equipment.model.js");
+const Staff = require("../models/staff.model.js");
+const Store = require("../models/store.model.js");
+const { paginatedResults } = require("../utils/pagination");
+const { search } = require("../utils/search");
+const { responseHandler } = require("../utils/responseHandler");
 
-const generateReport = async (model, searchTerm, req, populateFields = [], dataMapper, reportName, res) => {
+const generateReport = async (
+  model,
+  searchTerm,
+  req,
+  populateFields = [],
+  dataMapper,
+  reportName,
+  res
+) => {
   try {
     const searchQuery = search(model, searchTerm);
-    const paginatedData = await paginatedResults(model, searchQuery, req, { populateFields });
+    const paginatedData = await paginatedResults(model, searchQuery, req, {
+      populateFields,
+    });
 
     const reportData = paginatedData.results.map(dataMapper);
 
@@ -23,14 +33,21 @@ const generateReport = async (model, searchTerm, req, populateFields = [], dataM
       reportData,
     });
   } catch (error) {
-    return responseHandler(res, 500, false, `Failed to generate ${reportName.toLowerCase()}`, null, error.message);
+    return responseHandler(
+      res,
+      500,
+      false,
+      `Failed to generate ${reportName.toLowerCase()}`,
+      null,
+      error.message
+    );
   }
 };
 
 exports.generateTraineeReport = (req, res) => {
   generateReport(
     Trainee,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [{ path: "selectedPrograms", select: "programName" }],
     (trainee) => ({
@@ -38,7 +55,7 @@ exports.generateTraineeReport = (req, res) => {
       Email: trainee.contact.email,
       MembershipStartDate: trainee.membership.startDate,
       MembershipEndDate: trainee.membership.endDate,
-      SelectedPrograms: trainee.selectedPrograms.map(p => p.programName),
+      SelectedPrograms: trainee.selectedPrograms.map((p) => p.programName),
     }),
     "Trainee Report",
     res
@@ -48,7 +65,7 @@ exports.generateTraineeReport = (req, res) => {
 exports.generateEquipmentReport = (req, res) => {
   generateReport(
     Equipment,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [],
     (eq) => ({
@@ -64,7 +81,7 @@ exports.generateEquipmentReport = (req, res) => {
 exports.generateStaffReport = (req, res) => {
   generateReport(
     Staff,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [],
     (staff) => ({
@@ -81,7 +98,7 @@ exports.generateStaffReport = (req, res) => {
 exports.generateProgramsReport = (req, res) => {
   generateReport(
     Program,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [{ path: "registeredTrainees", select: "name contact" }],
     (program) => ({
@@ -90,7 +107,7 @@ exports.generateProgramsReport = (req, res) => {
       Exercises: program.exercises,
       Schedule: program.schedule,
       Image: program.image,
-      RegisteredTrainees: program.registeredTrainees.map(trainee => ({
+      RegisteredTrainees: program.registeredTrainees.map((trainee) => ({
         Name: trainee.name,
         Email: trainee.contact.email,
       })),
@@ -103,7 +120,7 @@ exports.generateProgramsReport = (req, res) => {
 exports.generatePaymentsReport = (req, res) => {
   generateReport(
     Payment,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [{ path: "TraineeID", select: "name contact.email" }],
     (payment) => ({
@@ -122,7 +139,7 @@ exports.generatePaymentsReport = (req, res) => {
 exports.generateStoreReport = (req, res) => {
   generateReport(
     Store,
-    req.query.search || '',
+    req.query.search || "",
     req,
     [],
     (product) => ({
