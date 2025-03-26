@@ -8,7 +8,6 @@ const {
   generateEquipmentReport,
   generateProgramsReport,
   generatePaymentsReport,
-  deleteAllPaymentReports,
 } = require("../controllers/reports.controller");
 
 router.get(

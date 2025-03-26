@@ -16,7 +16,7 @@ exports.createTrainee = async (req, res) => {
       gender,
       subscriptionType,
       password,
-      assignedCoach,
+      assignedCoach = null,
       selectedPrograms = [],
     } = req.body;
 
@@ -52,9 +52,12 @@ exports.createTrainee = async (req, res) => {
     const startDate = new Date();
     const endDate = calculateEndDate(startDate, subscriptionType);
 
-    const coach = await Staff.findById(assignedCoach);
-    if (!coach) {
-      return responseHandler(res, 404, false, null, "Coach not found");
+    let coach = null;
+    if (assignedCoach) {
+      coach = await Staff.findById(assignedCoach);
+      if (!coach) {
+        return responseHandler(res, 404, false, "Coach not found");
+      }
     }
 
     const trainee = new Trainee({
@@ -65,7 +68,7 @@ exports.createTrainee = async (req, res) => {
       selectedPrograms,
       subscriptionType,
       password: hashedPassword,
-      assignedCoach: coach._id,
+      ...(coach && { assignedCoach: coach._id }),
     });
 
     if (selectedPrograms.length > 0) {
