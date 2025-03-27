@@ -73,8 +73,11 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (name !== undefined) user.name = name;
-    if (contact !== undefined) user.contact.email = contact;
-    if (contact !== undefined) user.contact.phone = contact;
+
+    if (contact !== undefined) {
+      if (contact.email !== undefined) user.contact.email = contact.email;
+      if (contact.phone !== undefined) user.contact.phone = contact.phone;
+    }
 
     await user.save();
 
