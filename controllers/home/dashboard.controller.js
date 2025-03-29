@@ -7,8 +7,16 @@ const { responseHandler } = require("../../utils/responseHandler.js");
 
 exports.dashboardHomePage = async (req, res) => {
   try {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Fetch all counts in parallel
     const [
-      traineeCount,
+      totalTrainees,
+      activeTrainees,
+      inactiveTrainees,
+      newTrainees,
+      newMembersThisMonth,
       pendingPaymentsCount,
       maintenanceEquipmentsCount,
       totalProgramsCount,
@@ -16,19 +24,38 @@ exports.dashboardHomePage = async (req, res) => {
       availableCoaches,
     ] = await Promise.all([
       Trainee.countDocuments(),
+      Trainee.countDocuments({ status: "active" }),
+      Trainee.countDocuments({ status: "inactive" }),
+      Trainee.countDocuments({ status: "new" }),
+      Trainee.countDocuments({
+        "membership.startDate": { $gte: firstDayOfMonth },
+      }),
       Payment.countDocuments({ Status: "Pending" }),
       Equipment.countDocuments({ status: "Under Maintenance" }),
       Program.countDocuments(),
-      Program.find({}, "programName _id"),
-      Staff.find({ role: "Coach" }, "name _id"),
+      Program.find({}, "programName _id").lean(),
+      Staff.find({ role: "Coach" }, "name _id").lean(),
     ]);
 
+    // Calculate percentages
+    const percentage = (count) =>
+      totalTrainees > 0 ? ((count / totalTrainees) * 100).toFixed(2) : "0";
+
     responseHandler(res, 200, true, "Dashboard stats fetched successfully", {
-      trainees: traineeCount,
+      trainees: totalTrainees,
+      traineeStatus: {
+        active: `${percentage(activeTrainees)}%`,
+        inactive: `${percentage(inactiveTrainees)}%`,
+        new: `${percentage(newTrainees)}%`,
+      },
+      clubEnrollment: {
+        newMembers: newMembersThisMonth,
+        oldMembers: totalTrainees - newMembersThisMonth,
+      },
       pendingPayments: pendingPaymentsCount,
       underMaintenanceEquipments: maintenanceEquipmentsCount,
       totalPrograms: totalProgramsCount,
-      programs: programs,
+      programs,
       coaches: availableCoaches,
     });
   } catch (error) {
