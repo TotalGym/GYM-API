@@ -10,7 +10,6 @@ exports.dashboardHomePage = async (req, res) => {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Fetch all counts in parallel
     const [
       totalTrainees,
       activeTrainees,
@@ -37,7 +36,6 @@ exports.dashboardHomePage = async (req, res) => {
       Staff.find({ role: "Coach" }, "name _id").lean(),
     ]);
 
-    // Calculate percentages
     const percentage = (count) =>
       totalTrainees > 0 ? ((count / totalTrainees) * 100).toFixed(2) : "0";
 
