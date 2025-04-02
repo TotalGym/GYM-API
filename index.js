@@ -8,6 +8,7 @@ const errorHandler = require("./middlewares/error.middleware.js");
 
 const dashboardRoutes = require("./utils/split-routes/dashboard.routes.js");
 const appRoutes = require("./utils/split-routes/app.routes.js");
+const testHashing = require("./test/testHashing.js");
 
 dotenv.config();
 
