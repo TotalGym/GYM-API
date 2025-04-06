@@ -2,7 +2,7 @@ const express = require("express");
 const dbConnection = require("./config/database");
 const dotenv = require("dotenv");
 const cors = require("./config/cors");
-const rateLimiter = require("./middlewares/rateLimiter");
+// const rateLimiter = require("./middlewares/rateLimiter");
 
 const errorHandler = require("./middlewares/error.middleware.js");
 
@@ -17,7 +17,7 @@ dbConnection();
 const app = express();
 
 app.use(cors);
-app.use(rateLimiter);
+// app.use(rateLimiter);
 
 const PORT = process.env.PORT || 3000;
 
